@@ -14,13 +14,11 @@ class Client(val token: String, val shardCount: Int = 1) {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val manager = WebsocketManager(DiscordConstant.GATEWAY_URI, Client(token = File("${System.getProperty("user.dir")}\\token.txt").readLines().joinToString()))
+            val manager = WebsocketManager(DiscordConstant.GATEWAY_URI, Client(token = File("${System.getProperty("user.dir")}\\token.txt").readLines().joinToString(), shardCount = 2))
             for (i in 0 until manager.client.shardCount) {
                 manager.addWebsocket(i + 1)
             }
-
-            manager.run()
-
+            manager.runIdentities()
         }
     }
 

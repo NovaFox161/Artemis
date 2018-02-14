@@ -13,20 +13,22 @@ class WebsocketManager(val uri: URI, val client: Client) {
     fun addWebsocket(shard: Int): Websocket {
         websockets += Pair(shard, Websocket(uri = uri, shard = shard, client = client, manager = this))
         client.shards += Shard(num = shard, client = client)
-        return websockets[shard]!!
+        val socket = websockets[shard]!!
+        Thread { socket.run() }.start()
+        return socket
     }
 
     fun get(shard: Shard): Websocket = websockets[shard.num]!!
 
-    fun run() {
-        websockets.forEach { _, w -> w.run() }
 
+    fun runIdentities() {
         val exec = Executors.newSingleThreadScheduledExecutor()
         val curr = AtomicInteger(1)
         exec.scheduleAtFixedRate({
-            if(curr.get() > client.shardCount)
+            if (curr.get() > client.shardCount) {
                 exec.shutdownNow()
+            }
             websockets[curr.getAndIncrement()]?.identify()
-        }, 0, (5.5 * 1000).toLong(), TimeUnit.SECONDS)
+        }, 4000, (5.5 * 1000).toLong(), TimeUnit.MILLISECONDS)
     }
 }

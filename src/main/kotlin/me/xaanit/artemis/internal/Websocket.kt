@@ -43,7 +43,9 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
             null
         }
         when (obj?.get("op")?.asInt) {
-            10 -> startHeartbeat(obj?.get("d")?.asJsonObject?.get("heartbeat_interval")?.asLong)
+            10 -> {
+                startHeartbeat(obj?.get("d")?.asJsonObject?.get("heartbeat_interval")?.asLong)
+            }
         }
     }
 
@@ -53,19 +55,19 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     }
 
     private fun startHeartbeat(delay: Long?) {
-        logger.trace("&cyan[&time] Starting heartbeat thread with delay: $delay")
+        logger.trace("&cyan[&time] Starting heartbeat thread on shard #$shard with delay: $delay")
         executor.scheduleAtFixedRate({
             if (!sendHeartbeat.get()) executor.shutdownNow()
             val heartbeat = JsonObject()
             heartbeat.put(Pair("op", 1))
             heartbeat.put(Pair("d", s))
             val json = heartbeat.json()
-            logger.trace("&cyan[&time] Sending heartbeat. $json")
+            logger.trace("&cyan[&time] Sending heartbeat on shard #$shard. $json")
             send(json)
         }, 0, delay!!, TimeUnit.MILLISECONDS)
     }
 
-    internal fun identify() {
+    fun identify() {
         val presence = JsonObject()
         val game = JsonObject()
         game.put(Pair("name", "Running with Artemis BETA 1.0"))
@@ -87,13 +89,13 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
         identity.put(Pair("presence", presence))
         identity.put(Pair("properties", properties))
         if (client.shardCount != 1)
-            identity.put(Pair("shard", arrayOf(shard, client.shardCount).toJsonArray()))
+            identity.put(Pair("shard", arrayOf(shard - 1, client.shardCount).toJsonArray()))
 
         val full = JsonObject()
         full.put(Pair("op", 2))
         full.put(Pair("d", identity))
         val json = full.json()
-        logger.trace("&cyan[&time] Identifying: ${json.replace("\"token\":\"${client.token}\"", "\"token\":\"hunter3\"")}")
+        logger.trace("&cyan[&time] Identifying on shard #$shard: ${json.replace("\"token\":\"${client.token}\"", "\"token\":\"hunter3\"")}")
 
         send(json)
     }
