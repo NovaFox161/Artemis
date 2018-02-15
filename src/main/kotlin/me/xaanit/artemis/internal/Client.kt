@@ -16,7 +16,7 @@ class Client(val token: String, val shardCount: Int = 1) {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val manager = WebsocketManager(DiscordConstant.GATEWAY_URI, Client(token = "TOKEN", shardCount = 1))
+            val manager = WebsocketManager(DiscordConstant.GATEWAY_URI, Client(token = "NDEyNjM0MzA0MjkyNzE2NTU0.DWaOLQ.movLbiZ4kX1csvLW5cXDReWKb3E", shardCount = 1))
             for (i in 0 until manager.client.shardCount) {
                 manager.addWebsocket(i + 1)
             }

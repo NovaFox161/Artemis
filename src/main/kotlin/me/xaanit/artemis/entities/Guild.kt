@@ -9,7 +9,7 @@ class Guild(
         val avatarUrl: String,
         val owner: Member,
         val voiceRegion: String, // TODO: Enum
-        val afkChannel: Long, // TODO: VoiceChannels
+        val afkChannel: Long?, // TODO: VoiceChannels
         val afkTimeout: Int,
         val widgetEnbaled: Boolean,
         val welcomeMessagesEnabled: Boolean,

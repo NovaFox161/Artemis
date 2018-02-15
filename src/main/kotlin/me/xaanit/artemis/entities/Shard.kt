@@ -7,8 +7,8 @@ class Shard(
         val client: Client
 ) {
 
-    private var guildCache: Map<Long, Guild> = mapOf()
-    private var userCache: Map<Long, User> = mapOf()
+    internal var guildCache: Map<Long, Guild> = mapOf()
+    internal var userCache: Map<Long, User> = mapOf()
 
     val guilds: List<Guild>
         get() {

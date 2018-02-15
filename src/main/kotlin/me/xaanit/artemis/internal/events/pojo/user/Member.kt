@@ -1,5 +1,6 @@
 package me.xaanit.artemis.internal.events.pojo.user
 
+
 data class Member(
         val user: User,
         val roles: Array<String>,

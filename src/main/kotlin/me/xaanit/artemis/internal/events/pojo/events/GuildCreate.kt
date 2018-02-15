@@ -1,6 +1,10 @@
 package me.xaanit.artemis.internal.events.pojo.events
 
+import me.xaanit.artemis.entities.Guild
+import me.xaanit.artemis.entities.User
+import me.xaanit.artemis.internal.DiscordConstant
 import me.xaanit.artemis.internal.events.pojo.Emoji
+import me.xaanit.artemis.internal.events.pojo.Handleable
 import me.xaanit.artemis.internal.events.pojo.VoiceState
 import me.xaanit.artemis.internal.events.pojo.channels.Channel
 import me.xaanit.artemis.internal.events.pojo.game.Game
@@ -31,4 +35,34 @@ data class GuildCreate(
         val application_id: String?,
         val afk_timeout: Int,
         val afk_channel_id: String?
-)
+) : Handleable() {
+
+    override fun handle() {
+        var createdUsers: Array<User> = arrayOf()
+        var createdMembers: Array<me.xaanit.artemis.entities.Member> = arrayOf()
+        var createdChannels: Array<Channel>
+        val guild = Guild(
+            id = id.toLong(),
+                name = name,
+                avatarUrl = DiscordConstant.GUILD_ICON.format(id, icon),
+                afkChannel = afk_channel_id?.toLong(),
+                afkTimeout = afk_timeout,
+              //  channels = cratedChannels
+        )
+        members.forEach {
+           createdMembers += me.xaanit.artemis.entities.Member(
+
+            )
+        }
+
+        createdMembers.forEach {
+            createdUsers += User(
+                    id = it.id,
+                    avatarUrl = it.avatarUrl,
+                    client = client,
+                    discriminator = it.discriminator,
+                    username = it.username
+            )
+        }
+    }
+}
