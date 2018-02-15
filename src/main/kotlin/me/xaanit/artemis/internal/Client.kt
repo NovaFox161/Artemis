@@ -5,16 +5,18 @@ import me.xaanit.artemis.entities.Guild
 import me.xaanit.artemis.entities.Shard
 import me.xaanit.artemis.entities.User
 import me.xaanit.artemis.entities.presence.Status
-import java.io.File
+import me.xaanit.artemis.internal.events.Dispatcher
 
 class Client(val token: String, val shardCount: Int = 1) {
     internal var shards: List<Shard> = listOf()
     private var statusTracked: Status = Status.ONLINE
 
+    val dispatcher = Dispatcher(this)
+
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val manager = WebsocketManager(DiscordConstant.GATEWAY_URI, Client(token = File("${System.getProperty("user.dir")}\\token.txt").readLines().joinToString(), shardCount = 2))
+            val manager = WebsocketManager(DiscordConstant.GATEWAY_URI, Client(token = "TOKEN", shardCount = 1))
             for (i in 0 until manager.client.shardCount) {
                 manager.addWebsocket(i + 1)
             }

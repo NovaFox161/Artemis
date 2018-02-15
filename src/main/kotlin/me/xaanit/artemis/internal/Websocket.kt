@@ -1,11 +1,14 @@
 package me.xaanit.artemis.internal
 
+import com.github.salomonbrys.kotson.jsonArray
+import com.github.salomonbrys.kotson.jsonObject
 import com.github.salomonbrys.kotson.put
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
+import me.xaanit.artemis.internal.events.pojo.events.GuildCreate
 import me.xaanit.artemis.internal.logger.Logger
 import me.xaanit.artemis.util.Extensions.json
 import me.xaanit.artemis.util.Extensions.jsonObject
-import me.xaanit.artemis.util.Extensions.toJsonArray
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
@@ -18,6 +21,10 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     private val sendHeartbeat = AtomicBoolean(true)
     private val executor = Executors.newSingleThreadScheduledExecutor()
     private var s: Int? = null
+
+    companion object {
+        private val gson = GsonBuilder().serializeNulls().create()
+    }
 
     override fun onOpen(handshakedata: ServerHandshake?) {
         logger.trace("&cyan[&time] Got handshake from websocket with shard #$shard.")
@@ -35,6 +42,7 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     }
 
     override fun onMessage(message: String?) {
+
         logger.trace("&cyan[&time] Received message from websocket on shard #$shard: $message")
         val obj = message?.jsonObject()
         s = try {
@@ -42,10 +50,20 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
         } catch (ex: UnsupportedOperationException) {
             null
         }
-        when (obj?.get("op")?.asInt) {
-            10 -> {
-                startHeartbeat(obj?.get("d")?.asJsonObject?.get("heartbeat_interval")?.asLong)
+        try {
+            when (obj?.get("op")?.asInt) {
+                10 -> {
+                    startHeartbeat(obj?.get("d")?.asJsonObject?.get("heartbeat_interval")?.asLong)
+                }
             }
+        } catch (ex: UnsupportedOperationException) {
+        }
+
+        try {
+            when (obj?.get("t")?.asString) {
+                "GUILD_CREATE" -> logger.trace("&cyan[&time] Received GUILD_CREATE, created obj: ${gson.fromJson(message, GuildCreate::class.java)}")
+            }
+        } catch (ex: UnsupportedOperationException) {
         }
     }
 
@@ -68,7 +86,8 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     }
 
     fun identify() {
-        val presence = JsonObject()
+   /*     val presence = JsonObject()
+
         val game = JsonObject()
         game.put(Pair("name", "Running with Artemis BETA 1.0"))
         game.put(Pair("type", 0))
@@ -84,7 +103,7 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
 
         val identity = JsonObject()
         identity.put(Pair("token", client.token))
-        identity.put(Pair("compress", true))
+        identity.put(Pair("compress", false))
         identity.put(Pair("large_threshold", 250))
         identity.put(Pair("presence", presence))
         identity.put(Pair("properties", properties))
@@ -93,8 +112,35 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
 
         val full = JsonObject()
         full.put(Pair("op", 2))
-        full.put(Pair("d", identity))
-        val json = full.json()
+        full.put(Pair("d", identity))*/
+
+        val base: JsonObject = jsonObject(
+                "op" to 2,
+                "d" to jsonObject(
+                        "token" to client.token,
+                        "compress" to false,
+                        "large_threshold" to 250,
+                        "presence" to jsonObject(
+                                "game" to jsonObject(
+                                        "name" to "Event dispatching",
+                                        "type" to 0
+                                ),
+                                "status" to client.status.toString(),
+                                "since" to 91879201,
+                                "afk" to false
+                        ),
+                        "properties" to jsonObject(
+                                "\$os" to "windows",
+                                "\$browser" to "Artemis",
+                                "\$device" to "Artemis"
+                        ),
+                    "shard" to jsonArray(
+                            shard - 1,
+                            client.shardCount
+                    )
+                )
+        )
+        val json = base.json()
         logger.trace("&cyan[&time] Identifying on shard #$shard: ${json.replace("\"token\":\"${client.token}\"", "\"token\":\"hunter3\"")}")
 
         send(json)

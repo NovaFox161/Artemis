@@ -29,6 +29,6 @@ class WebsocketManager(val uri: URI, val client: Client) {
                 exec.shutdownNow()
             }
             websockets[curr.getAndIncrement()]?.identify()
-        }, 4000, (5.5 * 1000).toLong(), TimeUnit.MILLISECONDS)
+        }, 10000, (5.5 * 1000).toLong(), TimeUnit.MILLISECONDS)
     }
 }

@@ -24,7 +24,7 @@ class Logger private constructor(val name: String) {
                     .replace("&level", lvl)
         }
 
-        private fun Long.dateFormat(): String = SimpleDateFormat("MMM dd,yyyy HH:mm").format(Date(this))
+        private fun Long.dateFormat(): String = SimpleDateFormat("MMM dd,yyyy HH:mm:ss").format(Date(this))
 
         private var loggers: Map<String, Logger> = mapOf()
         var level: LoggerLevel = TRACE
