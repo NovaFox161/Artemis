@@ -19,7 +19,6 @@ class WebsocketManager(val uri: URI, val client: Client) {
         websockets += Pair(shard, Websocket(uri = uri, shard = shard, client = client, manager = this))
         client.shards += Shard(num = shard, client = client)
         val socket = websockets[shard]!!
-        Thread { socket.run() }.start()
         return socket
     }
 
