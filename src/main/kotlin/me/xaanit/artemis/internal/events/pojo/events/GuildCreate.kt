@@ -1,27 +1,33 @@
 package me.xaanit.artemis.internal.events.pojo.events
 
+import com.github.salomonbrys.kotson.jsonObject
 import me.xaanit.artemis.entities.Guild
 import me.xaanit.artemis.entities.User
+import me.xaanit.artemis.entities.events.ReadyEvent
+import me.xaanit.artemis.entities.events.guild.GuildCreateEvent
+import me.xaanit.artemis.entities.events.shard.ShardReadyEvent
 import me.xaanit.artemis.internal.DiscordConstant
-import me.xaanit.artemis.internal.events.pojo.Emoji
+import me.xaanit.artemis.internal.events.pojo.EmojiPojo
 import me.xaanit.artemis.internal.events.pojo.Handleable
-import me.xaanit.artemis.internal.events.pojo.VoiceState
-import me.xaanit.artemis.internal.events.pojo.channels.Channel
-import me.xaanit.artemis.internal.events.pojo.game.Game
-import me.xaanit.artemis.internal.events.pojo.user.Member
+import me.xaanit.artemis.internal.events.pojo.RolePojo
+import me.xaanit.artemis.internal.events.pojo.VoiceStatePojo
+import me.xaanit.artemis.internal.events.pojo.channels.ChannelPojo
+import me.xaanit.artemis.internal.events.pojo.game.GamePojo
+import me.xaanit.artemis.internal.events.pojo.user.MemberPojo
+import me.xaanit.artemis.util.Extensions.send
 
 data class GuildCreate(
-        val voice_states: List<VoiceState>,
+        val voice_states: List<VoiceStatePojo>,
         val verification_level: Int,
         val unavaliable: Boolean,
-        val system_channel_id: String,
+        val system_channel_id: String?,
         val splash: Boolean,
         val region: String,
         val owner_id: String,
         val name: String,
         val mfa_level: Int,
-        val members: List<Member>,
-        val presences: List<Game>,
+        val members: List<MemberPojo>,
+        val presences: List<GamePojo>,
         val member_count: Int,
         val large: Boolean,
         val joined_at: String,
@@ -29,40 +35,68 @@ data class GuildCreate(
         val icon: String,
         val features: List<String>,
         val explicit_content_filter: Int,
-        val emojis: List<Emoji>,
+        val emojis: List<EmojiPojo>,
         val default_message_notifications: Int,
-        val channels: List<Channel>,
+        val channels: List<ChannelPojo>,
         val application_id: String?,
         val afk_timeout: Int,
-        val afk_channel_id: String?
+        val afk_channel_id: String?,
+        val roles: List<RolePojo>
 ) : Handleable() {
 
     override fun handle() {
         var createdUsers: Array<User> = arrayOf()
-        var createdMembers: Array<me.xaanit.artemis.entities.Member> = arrayOf()
-        var createdChannels: Array<Channel>
         val guild = Guild(
-            id = id.toLong(),
+                id = id.toLong(),
                 name = name,
                 avatarUrl = DiscordConstant.GUILD_ICON.format(id, icon),
                 afkChannel = afk_channel_id?.toLong(),
                 afkTimeout = afk_timeout,
-              //  channels = cratedChannels
+                channelData = channels.toTypedArray(),
+                roleData = roles.toTypedArray(),
+                memberData = members.toTypedArray(),
+                explicitContentFilterLevel = explicit_content_filter,
+                large = large,
+                client = clientObj,
+                systemChannelId = system_channel_id?.toLong() ?: 0,
+                voiceRegion = region,
+                welcomeMessagesEnabled = default_message_notifications == 1,
+                ownerId = owner_id.toLong()
         )
-        members.forEach {
-           createdMembers += me.xaanit.artemis.entities.Member(
 
-            )
-        }
 
-        createdMembers.forEach {
+        shardObj.guildCache += guild.id to guild
+
+        websocketObj.send(
+                jsonObject(
+                        "op" to 8,
+                        "d" to jsonObject(
+                                "guild_id" to id,
+                                "query" to "",
+                                "limit" to 0
+                        ))
+        )
+
+        guild.members.forEach {
             createdUsers += User(
                     id = it.id,
                     avatarUrl = it.avatarUrl,
-                    client = client,
+                    client = clientObj,
                     discriminator = it.discriminator,
-                    username = it.username
+                    username = it.username,
+                    bot = it.bot
             )
         }
+        createdUsers.forEach { shardObj.userCache += Pair(it.id, it) }
+        clientObj.dispatcher.dispatch(GuildCreateEvent(guild))
+
+        if (websocketObj.counter.incrementAndGet() >= websocketObj.guildSize && websocketObj.guildSize != -1) {
+            clientObj.dispatcher.dispatch(ShardReadyEvent(shardObj))
+            if (websocketObj.manager.counter.incrementAndGet() == clientObj.shardCount) {
+                clientObj.dispatcher.dispatch(ReadyEvent(clientObj))
+            }
+        }
     }
+
+
 }

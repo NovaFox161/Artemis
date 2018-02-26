@@ -1,29 +1,29 @@
 package me.xaanit.artemis.internal
 
 
-import me.xaanit.artemis.entities.Guild
-import me.xaanit.artemis.entities.Shard
-import me.xaanit.artemis.entities.User
+import me.xaanit.artemis.entities.*
 import me.xaanit.artemis.entities.presence.Status
 import me.xaanit.artemis.internal.events.Dispatcher
 
 class Client(val token: String, val shardCount: Int = 1) {
     internal var shards: List<Shard> = listOf()
     private var statusTracked: Status = Status.ONLINE
+    internal lateinit var usTracked: User
+    internal val manager: WebsocketManager = WebsocketManager(DiscordConstant.GATEWAY_URI, this)
 
-    val dispatcher = Dispatcher(this)
-
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val manager = WebsocketManager(DiscordConstant.GATEWAY_URI, Client(token = "NDEyNjM0MzA0MjkyNzE2NTU0.DWaOLQ.movLbiZ4kX1csvLW5cXDReWKb3E", shardCount = 1))
-            for (i in 0 until manager.client.shardCount) {
-                manager.addWebsocket(i + 1)
-            }
-            manager.runIdentities()
+    val ourUser: User
+        get() {
+            return usTracked
         }
+
+    init {
+        for (i in 0 until manager.client.shardCount) {
+            manager.addWebsocket(i + 1)
+        }
+        manager.runIdentities()
     }
 
+    val dispatcher = Dispatcher(this)
     fun logout() {
 
     }
@@ -35,12 +35,40 @@ class Client(val token: String, val shardCount: Int = 1) {
             return list
         }
 
+
+    val channels: List<Channel>
+        get() {
+            var list: List<Channel> = listOf()
+            guilds.stream().map(Guild::channels).forEach { list += it }
+            return list
+        }
+
+    val textChannels: List<TextChannel>
+        get() {
+            var list: List<TextChannel> = listOf()
+            guilds.stream().map(Guild::textChannels).forEach { list += it }
+            return list
+        }
+
+    val voiceChannels: List<VoiceChannel>
+        get() {
+            var list: List<VoiceChannel> = listOf()
+            guilds.stream().map(Guild::voiceChannels).forEach { list += it }
+            return list
+        }
+
     val users: List<User>
         get() {
             var list: List<User> = listOf()
             shards.stream().map(Shard::users).forEach { list += it }
             return list
         }
+
+
+    fun getChannelById(id: Long): Channel? = channels.find { it.id == id }
+
+
+    fun getGuildById(id: Long): Guild? = guilds.find { it.id == id }
 
     val status = statusTracked
 

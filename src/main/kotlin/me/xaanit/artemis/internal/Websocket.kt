@@ -6,7 +6,8 @@ import com.github.salomonbrys.kotson.put
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import me.xaanit.artemis.internal.events.pojo.Handleable
-import me.xaanit.artemis.internal.events.pojo.events.GuildCreate
+import me.xaanit.artemis.internal.events.pojo.events.*
+import me.xaanit.artemis.internal.events.pojo.message.MessagePojo
 import me.xaanit.artemis.internal.logger.Logger
 import me.xaanit.artemis.util.Extensions.json
 import me.xaanit.artemis.util.Extensions.jsonObject
@@ -16,12 +17,16 @@ import java.net.URI
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class Websocket(uri: URI, val shard: Int, private val client: Client, val manager: WebsocketManager) : WebSocketClient(uri) {
-    private val logger = Logger.getLogger("Artemis Websocket")
+    internal val logger = Logger.getLogger("Artemis Websocket")
     private val sendHeartbeat = AtomicBoolean(true)
     private val executor = Executors.newSingleThreadScheduledExecutor()
     private var s: Int? = null
+    internal val counter = AtomicInteger(0)
+    internal var guildSize: Int = -1
+
 
     companion object {
         private val gson = GsonBuilder().serializeNulls().create()
@@ -43,7 +48,6 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     }
 
     override fun onMessage(message: String?) {
-
         logger.trace("&cyan[&time] Received message from websocket on shard #$shard: $message")
         val obj = message?.jsonObject()
         s = try {
@@ -54,18 +58,24 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
         try {
             when (obj?.get("op")?.asInt) {
                 10 -> {
-                    startHeartbeat(obj?.get("d")?.asJsonObject?.get("heartbeat_interval")?.asLong)
+                    startHeartbeat(obj.get("d")?.asJsonObject?.get("heartbeat_interval")?.asLong)
+                }
+                11 -> {
+                    if(!manager.identified.get()) {
+                        manager.identified.set(true)
+                        manager.runIdentities()
+                    }
                 }
             }
         } catch (ex: UnsupportedOperationException) {
         }
 
         try {
-            handleEvents(gson.toJson(obj?.get("d")))
-
-        } catch (ex: UnsupportedOperationException) {
+            manager.executor.schedule({ handleEvents(obj?.get("t")?.asString!!, gson.toJson(obj?.get("d"))) }, 0, TimeUnit.MICROSECONDS)
+        } catch (ex: Exception) {
         }
     }
+
 
     override fun onError(ex: Exception?) {
         logger.trace("&cyan[&time] Received error from websocket on shard #$shard.")
@@ -94,7 +104,7 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
                         "large_threshold" to 250,
                         "presence" to jsonObject(
                                 "game" to jsonObject(
-                                        "name" to "Event dispatching",
+                                        "name" to "Running Artemis BETA 1.0",
                                         "type" to 0
                                 ),
                                 "status" to client.status.toString(),
@@ -118,15 +128,28 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     }
 
 
-    private fun handleEvents(event: String) {
-        val clazz: Class<out Handleable>? = when (event) {
-            "GUILD_CREATE" -> GuildCreate::class.java
-            else -> null
+    private fun handleEvents(event: String, data: String) {
+        try {
+            val clazz: Class<out Handleable> = when (event) {
+                "GUILD_CREATE" -> GuildCreate::class.java
+                "MESSAGE_DELETE" -> MessageDelete::class.java
+                "READY" -> Ready::class.java
+                "MESSAGE_CREATE" -> MessagePojo::class.java
+                "TYPING_START" -> TypingStart::class.java
+                "GUILD_MEMBERS_CHUNK" -> GuildMemberChunkPojo::class.java
+                else -> null
+            } ?: return
+
+            logger.trace("&cyan[&time] Trying to handle event of type: $event")
+
+            val obj = gson.fromJson(data, clazz) ?: throw RuntimeException("You should never see this.")
+            synchronized(obj) {
+                obj.shardObj = client.shards[shard - 1]
+                obj.handle()
+            }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
         }
-        val obj = gson.fromJson(event, clazz)
-        obj?.client = client
-        obj?.shard = client.shards[shard]
-        obj?.handle()
     }
 
 

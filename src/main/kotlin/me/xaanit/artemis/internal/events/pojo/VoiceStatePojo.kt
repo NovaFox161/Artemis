@@ -1,6 +1,6 @@
 package me.xaanit.artemis.internal.events.pojo
 
-class VoiceState(
+class VoiceStatePojo(
         val user_id: String,
         val suppress: Boolean,
         val session_id: String,

@@ -3,19 +3,33 @@ package me.xaanit.artemis.entities
 import me.xaanit.artemis.entities.presence.Game
 import me.xaanit.artemis.entities.presence.Status
 import me.xaanit.artemis.internal.Client
+import java.util.*
 
 class Member(
-        private val user_id: Long,
+        private val userId: Long,
         private val name: String,
         private val discrim: String,
         private val avatar: String,
         private val cli: Client,
-        val roles: List<Role>,
+        private val bt: Boolean,
+        val roles: Array<Role>,
         val nickname: String?,
-        val voiceState: VoiceState,
-        val game: Game,
-        val status: Status,
         val guild: Guild
 ) : User(
-        id = user_id, username = name, discriminator = discrim, avatarUrl = avatar, client = cli
-)
+        id = userId, username = name, discriminator = discrim, avatarUrl = avatar, bot = bt, client = cli
+) {
+
+    val voiceState: VoiceState
+        get() = guild.voiceStates[this.id] ?: VoiceState(member = this)
+    val game: Game
+        get() = guild.games[this.id] ?: Game()
+
+    val status: Status
+        get() {
+            return Status.ONLINE
+        }
+
+    override fun toString(): String {
+        return "Member(userId=$userId, name='$name', discrim='$discrim', avatar='$avatar', cli=$cli, roles=${Arrays.toString(roles)}, nickname=$nickname, voiceState=$voiceState, game=$game)"
+    }
+}

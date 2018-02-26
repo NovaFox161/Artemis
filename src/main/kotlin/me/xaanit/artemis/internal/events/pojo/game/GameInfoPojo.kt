@@ -1,6 +1,6 @@
 package me.xaanit.artemis.internal.events.pojo.game
 
-data class GameInfo(
+data class GameInfoPojo(
         val type: Int,
-        val timestamps: Timestamps
+        val timestamps: TimestampsPojo
 )

@@ -1,8 +1,8 @@
 package me.xaanit.artemis.internal.events.pojo.channels
 
-data class PermissionOverwrite(
+data class PermissionOverwritePojo(
         val type: String,
         val id: String,
-        val deny: Int,
-        val allow: Int
+        val deny: Long,
+        val allow: Long
 )

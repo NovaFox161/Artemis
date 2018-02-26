@@ -1,8 +1,8 @@
 package me.xaanit.artemis.internal.events.pojo
 
-class Role(
+class RolePojo(
         val position: Int,
-        val permissions: Int,
+        val permissions: Long,
         val name: String,
         val mentionable: Boolean,
         val managed: Boolean,

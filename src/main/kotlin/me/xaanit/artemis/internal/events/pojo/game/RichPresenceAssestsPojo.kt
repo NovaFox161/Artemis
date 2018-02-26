@@ -1,6 +1,6 @@
 package me.xaanit.artemis.internal.events.pojo.game
 
-data class RichPresenceAssests(
+data class RichPresenceAssestsPojo(
         val small_text: String,
         val large_text: String,
         val large_image: String,

@@ -8,9 +8,10 @@ open class User(
         val username: String,
         val discriminator: String,
         val avatarUrl: String,
-        val client: Client
+        val bot: Boolean,
+        val client: Client?
 ) : Mentionable {
-    override fun mention(): String = "<@!$id>"
+    override val mention: String = "<@!$id>"
 
     fun getMember(guild: Guild): Member? = guild.getMember(this)
 }

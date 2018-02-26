@@ -1,6 +1,6 @@
 package me.xaanit.artemis.internal.events.pojo.channels
 
-data class Channel(
+data class ChannelPojo(
         val type: Int,
         val topic: String,
         val position: Int,
@@ -10,5 +10,5 @@ data class Channel(
         val last_pin_timestamp: String,
         val last_message_id: String,
         val id: String,
-        val permission_overwrites: Array<PermissionOverwrite>
+        val permission_overwrites: Array<PermissionOverwritePojo>
 )

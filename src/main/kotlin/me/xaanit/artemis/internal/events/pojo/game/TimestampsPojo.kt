@@ -1,5 +1,5 @@
 package me.xaanit.artemis.internal.events.pojo.game
 
-data class Timestamps(
+data class TimestampsPojo(
         val start: Long
 )
