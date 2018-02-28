@@ -9,7 +9,7 @@ open class User(
         val discriminator: String,
         val avatarUrl: String,
         val bot: Boolean,
-        val client: Client?
+        val client: Client
 ) : Mentionable {
     override val mention: String = "<@!$id>"
 

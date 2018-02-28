@@ -3,13 +3,13 @@ package me.xaanit.artemis.entities
 import me.xaanit.artemis.entities.presence.Game
 import me.xaanit.artemis.internal.Client
 import me.xaanit.artemis.internal.DiscordConstant
-import me.xaanit.artemis.internal.events.pojo.RolePojo
-import me.xaanit.artemis.internal.events.pojo.VoiceStatePojo
-import me.xaanit.artemis.internal.events.pojo.channels.ChannelPojo
-import me.xaanit.artemis.internal.events.pojo.channels.PermissionOverwritePojo
-import me.xaanit.artemis.internal.events.pojo.events.GuildMemberChunkPojo
-import me.xaanit.artemis.internal.events.pojo.game.GamePojo
-import me.xaanit.artemis.internal.events.pojo.user.MemberPojo
+import me.xaanit.artemis.internal.pojo.RolePojo
+import me.xaanit.artemis.internal.pojo.VoiceStatePojo
+import me.xaanit.artemis.internal.pojo.channels.ChannelPojo
+import me.xaanit.artemis.internal.pojo.channels.PermissionOverwritePojo
+import me.xaanit.artemis.internal.pojo.events.GuildMemberChunkPojo
+import me.xaanit.artemis.internal.pojo.game.GamePojo
+import me.xaanit.artemis.internal.pojo.user.MemberPojo
 import me.xaanit.artemis.util.Extensions.shard
 import java.awt.Color
 import java.util.*
@@ -87,7 +87,7 @@ class Guild(
     }
 
     private fun MemberPojo.handle() {
-        val avatarUrl = if (user.avatar == null) DiscordConstant.USER_DEFAULT_ICON.format(user.discriminator.toInt() % 5) else (DiscordConstant.USER_ICON.format(user.id, user.avatar, if (user.avatar?.startsWith("a_")) "gif" else "png"))
+        val avatarUrl = if (user.avatar == null) DiscordConstant.USER_DEFAULT_ICON.format(user.discriminator.toInt() % 5) else (DiscordConstant.USER_ICON.format(user.id, user.avatar, if (user.avatar.startsWith("a_")) "gif" else "png"))
         var roles: Array<Role> = arrayOf()
         this.roles.forEach {
             val role = this@Guild.roles.find { r -> r.id == it.toLong() }
@@ -98,7 +98,7 @@ class Guild(
                 user.id.toLong() to Member(
                         nickname = nick,
                         discrim = user.discriminator,
-                        cli = client!!,
+                        cli = client,
                         avatar = avatarUrl,
                         roles = roles,
                         guild = this@Guild,
@@ -127,14 +127,14 @@ class Guild(
 
         var arr: Map<Long, Member> = mapOf()
 
-        forEach {
+        forEach { it ->
             var roles: Array<Role> = arrayOf()
             it.roles.forEach {
                 val role = this@Guild.roles.find { r -> r.id == it.toLong() }
                 if (role != null)
                     roles += role // Should never NPE. Problem if it does.
             }
-            val avatarUrl = if (it.user.avatar == null) DiscordConstant.USER_DEFAULT_ICON.format(it.user.discriminator.toInt() % 5) else (DiscordConstant.USER_ICON.format(it.user.id, it.user.avatar, if (it.user.avatar?.startsWith("a_")) "gif" else "png"))
+            val avatarUrl = if (it.user.avatar == null) DiscordConstant.USER_DEFAULT_ICON.format(it.user.discriminator.toInt() % 5) else DiscordConstant.USER_ICON.format(it.user.id, it.user.avatar, if (it.user.avatar.startsWith("a_")) "gif" else "png")
             arr +=
                     it.user.id.toLong() to Member(
                             userId = it.user.id.toLong(),
@@ -142,7 +142,7 @@ class Guild(
                             name = it.user.username,
                             roles = roles,
                             avatar = avatarUrl,
-                            cli = client!!,
+                            cli = client,
                             discrim = it.user.discriminator,
                             nickname = it.nick,
                             bt = it.user.bot
@@ -161,7 +161,7 @@ class Guild(
                     it.id.toLong() to Role(
                             id = it.id.toLong(),
                             name = it.name,
-                            client = this@Guild.client!!,
+                            client = this@Guild.client,
                             color = Color(it.color),
                             guild = this@Guild,
                             hoisted = it.hoist,

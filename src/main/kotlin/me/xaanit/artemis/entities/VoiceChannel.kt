@@ -1,5 +1,6 @@
 package me.xaanit.artemis.entities
 
+import me.xaanit.artemis.entities.embed.EmbedObject
 import me.xaanit.artemis.internal.requests.DiscordRequest
 
 class VoiceChannel(
@@ -12,7 +13,7 @@ class VoiceChannel(
 ) : Channel(id = channelId, name = channelName, guild = channelGuild, position = channelPosition, overwrites = channelOverwrites, nsfw = false, private = false, parent = channelParent, client = channelGuild.client) {
     override fun sendMessage(
             content: Any,
-            embed: String?,
+            embed: EmbedObject?,
             tts: Boolean
     ): DiscordRequest<Message> {
         throw UnsupportedOperationException("Can't send messages in a voice channel")

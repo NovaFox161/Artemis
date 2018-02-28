@@ -6,17 +6,23 @@ import com.github.salomonbrys.kotson.put
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.neovisionaries.ws.client.*
-import me.xaanit.artemis.internal.events.pojo.Handleable
-import me.xaanit.artemis.internal.events.pojo.events.*
-import me.xaanit.artemis.internal.events.pojo.message.MessagePojo
 import me.xaanit.artemis.internal.logger.Logger
+import me.xaanit.artemis.internal.pojo.Handleable
+import me.xaanit.artemis.internal.pojo.events.*
+import me.xaanit.artemis.internal.pojo.message.MessagePojo
 import me.xaanit.artemis.util.Extensions.json
 import me.xaanit.artemis.util.Extensions.jsonObject
+import java.io.BufferedReader
+import java.io.ByteArrayInputStream
+import java.io.IOException
+import java.io.InputStreamReader
 import java.net.URI
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.zip.GZIPInputStream
+
 
 class Websocket(uri: URI, val shard: Int, private val client: Client, val manager: WebsocketManager) : WebSocketAdapter() {
     internal val logger = Logger.getLogger("Artemis Websocket")
@@ -25,12 +31,26 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     private var s: Int? = null
     internal val counter = AtomicInteger(0)
     internal var guildSize: Int = -1
-    private var websocket: WebSocket
+    internal val websocket: WebSocket
 
     companion object {
         private val gson = GsonBuilder().serializeNulls().create()
         private val factory = WebSocketFactory()
+
+        @Throws(IOException::class)
+        internal fun decompress(compressed: ByteArray): String {
+            val bis = ByteArrayInputStream(compressed)
+            val gis = GZIPInputStream(bis)
+            val br = BufferedReader(InputStreamReader(gis, "UTF-8"))
+            val sb = StringBuilder()
+            br.readLines().forEach { sb.append(it) }
+            br.close()
+            gis.close()
+            bis.close()
+            return sb.toString()
+        }
     }
+
 
     init {
         websocket = factory.createSocket(uri)
@@ -72,20 +92,20 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
                 10 -> {
                     startHeartbeat(obj.get("d")?.asJsonObject?.get("heartbeat_interval")?.asLong)
                 }
-                11 -> {
-                    if(!manager.identified.get()) {
-                        manager.identified.set(true)
-                        manager.runIdentities()
+                11 -> manager.runIdentities()
+                0 -> {
+                    try {
+                        manager.executor.schedule({ handleEvents(obj?.get("t")?.asString!!, gson.toJson(obj.get("d"))) }, 0, TimeUnit.MICROSECONDS)
+                    } catch (ex: Exception) {
                     }
+                }
+                else -> {
+                    logger.trace("&cyan[&time] Unahndled opcode: ${obj?.get("op")}")
                 }
             }
         } catch (ex: UnsupportedOperationException) {
         }
 
-        try {
-            manager.executor.schedule({ handleEvents(obj?.get("t")?.asString!!, gson.toJson(obj?.get("d"))) }, 0, TimeUnit.MICROSECONDS)
-        } catch (ex: Exception) {
-        }
     }
 
 

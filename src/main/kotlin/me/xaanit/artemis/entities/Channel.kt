@@ -1,5 +1,6 @@
 package me.xaanit.artemis.entities
 
+import me.xaanit.artemis.entities.embed.EmbedObject
 import me.xaanit.artemis.internal.Client
 import me.xaanit.artemis.internal.requests.DiscordRequest
 import java.util.*
@@ -24,7 +25,7 @@ abstract class Channel(
 
     abstract fun sendMessage(
             content: Any = "",
-            embed: String? = null,
+            embed: EmbedObject? = null,
             tts: Boolean = false
     ): DiscordRequest<Message>
 }

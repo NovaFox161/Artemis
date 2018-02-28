@@ -3,7 +3,6 @@ package me.xaanit.artemis.internal
 
 import me.xaanit.artemis.entities.*
 import me.xaanit.artemis.entities.presence.Status
-import me.xaanit.artemis.internal.events.Dispatcher
 
 class Client(val token: String, val shardCount: Int = 1) {
     internal var shards: List<Shard> = listOf()

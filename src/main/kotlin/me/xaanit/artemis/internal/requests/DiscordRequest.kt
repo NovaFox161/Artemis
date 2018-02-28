@@ -4,10 +4,14 @@ import com.github.salomonbrys.kotson.jsonObject
 import com.google.gson.JsonObject
 import khttp.*
 import khttp.responses.Response
+import me.xaanit.artemis.internal.ArtemisConstant
 import me.xaanit.artemis.internal.Client
+import me.xaanit.artemis.internal.Websocket
+import me.xaanit.artemis.internal.exceptions.DiscordException
 import me.xaanit.artemis.internal.exceptions.RateLimitException
 import me.xaanit.artemis.internal.logger.Logger
 import me.xaanit.artemis.internal.requests.MethodType.*
+import org.json.JSONException
 import org.json.JSONObject
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -30,7 +34,12 @@ class DiscordRequest<out T>(
     private var success: (T) -> Any = {}
     private var failure: (Throwable) -> Any = {}
     private val handled = AtomicBoolean(false)
-    private val headers = mapOf("Authorization" to "Bot ${client.token}", "Content-Type" to contentType)
+    private val headers = mapOf(
+            "Authorization" to "Bot ${client.token}",
+            "Content-Type" to contentType,
+            "User-Agent" to ArtemisConstant.USER_AGENT
+    )
+    private val sync = Object()
 
 
     init {
@@ -72,11 +81,21 @@ class DiscordRequest<out T>(
             if (response.statusCode == 429) {
                 throw RateLimitException()
             }
-            logger.trace("&cyan[&time] Got back request json: ${response.jsonObject}")
+            try {
+                println(Websocket.decompress(response.raw.readBytes()))
+                logger.trace("&cyan[&time] Got back request json: ${response.jsonObject}")
+            } catch(ex: JSONException) {}
             this.response.set(make(response))
         } catch (throwable: Throwable) {
             this.error.set(throwable)
         }
+        val thread = Thread {
+            synchronized(sync) {
+                sync.notifyAll()
+            }
+        }
+        thread.start()
+
         runHandle()
     }
 
@@ -95,5 +114,16 @@ class DiscordRequest<out T>(
         this.success = success
         this.failure = failure
         runHandle()
+    }
+
+    fun block(): T {
+        if (error.get() == null && response.get() == null) {
+            synchronized(sync) {
+                sync.wait()
+            }
+        }
+        val error = error.get()
+        if (error != null) throw error
+        return response.get() ?: throw DiscordException("Both error and response are null. Please report that to the developer with the following info: Route url is $url | Method type is $method | Json is $body")
     }
 }

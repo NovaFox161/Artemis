@@ -26,6 +26,8 @@ class WebsocketManager(val uri: URI, val client: Client) {
 
 
     fun runIdentities() {
+        if(identified.get()) return
+        identified.set(true)
         val exec = Executors.newSingleThreadScheduledExecutor()
         val curr = AtomicInteger(1)
         exec.scheduleAtFixedRate({

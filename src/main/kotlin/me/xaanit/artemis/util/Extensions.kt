@@ -10,7 +10,7 @@ import java.util.stream.Stream
 
 object Extensions {
 
-    private val parser = JsonParser()
+    internal val parser = JsonParser()
     internal val gson = GsonBuilder().serializeNulls().create()
 
     fun <T> Array<T>.stream(): Stream<T> = toList().stream()
@@ -19,12 +19,14 @@ object Extensions {
 
     fun String.jsonObject(): JsonObject = parser.parse(this).asJsonObject
 
+    fun Any.jsonObject(): JsonObject = gson.toJsonTree(this).asJsonObject
+
     fun Any?.json(): String = gson.toJson(this)
 
     fun Websocket.send(obj: JsonObject) {
         val json = obj.json()
         logger.trace("&cyan[&time] Trying to send message with json: $json")
-        send(json)
+        websocket.sendText(json)
     }
 
     fun Guild.shard(): Shard {
