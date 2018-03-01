@@ -27,7 +27,7 @@ class Guild(
         val client: Client,
         private val systemChannelId: Long,
         private val ownerId: Long,
-        private val builtChannels: Array<Channel>? = null,
+        private val builtChannels: Map<Long, Channel>? = null,
         private val channelData: Array<ChannelPojo>? = null,
         private val builtRoles: Map<Long, Role>? = null,
         private val roleData: Array<RolePojo>? = null,
@@ -41,7 +41,11 @@ class Guild(
     internal var voiceStates: Map<Long, VoiceState> = mapOf()
     internal var games: Map<Long, Game> = mapOf()
 
+    internal val channelCache: Map<Long, Channel>
+
     val channels: Array<Channel>
+        get() = channelCache.values.toTypedArray()
+
     val textChannels: Array<TextChannel>
         get() {
             var arr: Array<TextChannel> = arrayOf()
@@ -56,11 +60,11 @@ class Guild(
             return arr
         }
 
-    private var roleCache: Map<Long, Role> = mapOf()
+    internal var roleCache: Map<Long, Role> = mapOf()
     val roles: Array<Role>
         get() = roleCache.values.toTypedArray()
 
-    private var memberCache: Map<Long, Member> = mapOf()
+    internal var memberCache: Map<Long, Member> = mapOf()
 
     val members: Array<Member>
         get() = memberCache.values.toTypedArray()
@@ -70,7 +74,7 @@ class Guild(
 
 
     init {
-        channels = builtChannels ?: channelData.make()
+        channelCache = builtChannels ?: channelData.make()
         roleCache = builtRoles ?: roleData.make()
         memberCache = builtMembers ?: memberData.make()
         owner = members.find { it.id == ownerId }!!
@@ -96,27 +100,30 @@ class Guild(
         }
         memberCache +=
                 user.id.toLong() to Member(
-                        nickname = nick,
-                        discrim = user.discriminator,
-                        cli = client,
-                        avatar = avatarUrl,
-                        roles = roles,
-                        guild = this@Guild,
-                        userId = user.id.toLong(),
-                        name = user.username,
-                        bt = user.bot
-                )
+                nickname = nick,
+                discrim = user.discriminator,
+                cli = client,
+                avatar = avatarUrl,
+                roles = roles,
+                guild = this@Guild,
+                userId = user.id.toLong(),
+                name = user.username,
+                bt = user.bot
+        )
     }
 
     fun getMember(id: Long): Member? = memberCache[id]
     fun getMember(user: User): Member? = getMember(user.id)
 
-    private fun Array<ChannelPojo>?.make(): Array<Channel> {
-        if (this == null) return arrayOf()
-        var arr: Array<Channel> = arrayOf()
+    fun getRolebyId(id: Long): Role? = roleCache[id]
+    fun getChannelById(id: Long): Channel? = channelCache[id]
+
+    private fun Array<ChannelPojo>?.make(): Map<Long, Channel> {
+        if (this == null) return mapOf()
+        var arr: Map<Long, Channel> = mapOf()
         forEach {
             val channel = if (it.type == 0) createText(it) else createVoice(it)
-            arr += channel
+            arr += channel.id to channel
         }
         return arr
     }
@@ -137,16 +144,16 @@ class Guild(
             val avatarUrl = if (it.user.avatar == null) DiscordConstant.USER_DEFAULT_ICON.format(it.user.discriminator.toInt() % 5) else DiscordConstant.USER_ICON.format(it.user.id, it.user.avatar, if (it.user.avatar.startsWith("a_")) "gif" else "png")
             arr +=
                     it.user.id.toLong() to Member(
-                            userId = it.user.id.toLong(),
-                            guild = this@Guild,
-                            name = it.user.username,
-                            roles = roles,
-                            avatar = avatarUrl,
-                            cli = client,
-                            discrim = it.user.discriminator,
-                            nickname = it.nick,
-                            bt = it.user.bot
-                    )
+                    userId = it.user.id.toLong(),
+                    guild = this@Guild,
+                    name = it.user.username,
+                    roles = roles,
+                    avatar = avatarUrl,
+                    cli = client,
+                    discrim = it.user.discriminator,
+                    nickname = it.nick,
+                    bt = it.user.bot
+            )
         }
         return arr
     }
@@ -159,17 +166,17 @@ class Guild(
         forEach {
             createdRoles +=
                     it.id.toLong() to Role(
-                            id = it.id.toLong(),
-                            name = it.name,
-                            client = this@Guild.client,
-                            color = Color(it.color),
-                            guild = this@Guild,
-                            hoisted = it.hoist,
-                            managed = it.managed,
-                            mentionable = it.mentionable,
-                            permissions = Permission.getForBitset(it.permissions),
-                            position = it.position
-                    )
+                    id = it.id.toLong(),
+                    name = it.name,
+                    client = this@Guild.client,
+                    color = Color(it.color),
+                    guild = this@Guild,
+                    hoisted = it.hoist,
+                    managed = it.managed,
+                    mentionable = it.mentionable,
+                    permissions = Permission.getForBitset(it.permissions),
+                    position = it.position
+            )
         }
         return createdRoles
     }

@@ -30,7 +30,14 @@ class Client(val token: String, val shardCount: Int = 1) {
     val guilds: List<Guild>
         get() {
             var list: List<Guild> = listOf()
-            shards.stream().map(Shard::guilds).forEach { list += it }
+            shards.stream().forEach { list += it.guildCache.values }
+            return list
+        }
+
+    val roles: List<Role>
+        get() {
+            var list: List<Role> = listOf()
+            guilds.stream().forEach { list += it.roleCache.values }
             return list
         }
 
@@ -38,36 +45,57 @@ class Client(val token: String, val shardCount: Int = 1) {
     val channels: List<Channel>
         get() {
             var list: List<Channel> = listOf()
-            guilds.stream().map(Guild::channels).forEach { list += it }
+            guilds.stream().forEach { list += it.channelCache.values }
             return list
         }
 
     val textChannels: List<TextChannel>
         get() {
             var list: List<TextChannel> = listOf()
-            guilds.stream().map(Guild::textChannels).forEach { list += it }
+            guilds.forEach { list += it.textChannels }
             return list
         }
 
     val voiceChannels: List<VoiceChannel>
         get() {
             var list: List<VoiceChannel> = listOf()
-            guilds.stream().map(Guild::voiceChannels).forEach { list += it }
+            guilds.forEach { list += it.voiceChannels }
             return list
         }
 
     val users: List<User>
         get() {
             var list: List<User> = listOf()
-            shards.stream().map(Shard::users).forEach { list += it }
+            shards.forEach { list += it.userCache.values }
             return list
         }
 
 
-    fun getChannelById(id: Long): Channel? = channels.find { it.id == id }
+    fun getChannelById(id: Long): Channel? {
+        var channel: Channel? = null
+        shards.forEach {
+            channel = it.getChannelById(id) ?: channel
+        }
+        return channel
+    }
+
+    fun getRoleById(id: Long): Role? {
+        var role: Role? = null
+        shards.forEach {
+            role = it.getRoleById(id) ?: role
+        }
+        return role
+    }
 
 
-    fun getGuildById(id: Long): Guild? = guilds.find { it.id == id }
+    fun getGuildById(id: Long): Guild? {
+        var guild: Guild? = null
+        shards.forEach {
+            guild = it.getGuildById(id) ?: guild
+        }
+        return guild
+    }
+
 
     val status = statusTracked
 

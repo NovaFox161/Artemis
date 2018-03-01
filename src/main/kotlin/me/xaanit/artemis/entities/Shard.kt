@@ -11,17 +11,29 @@ class Shard(
     internal var userCache: Map<Long, User> = mapOf()
 
     val guilds: List<Guild>
-        get() {
-            var list: List<Guild> = listOf()
-            guildCache.forEach { _, g -> list += g }
-            return list
-        }
+        get() = guildCache.values.toList()
 
     val users: List<User>
-        get() {
-            var list: List<User> = listOf()
-            userCache.forEach { _, u -> list += u }
-            return list
+        get() = userCache.values.toList()
+
+
+    fun getGuildById(id: Long): Guild? = guildCache[id]
+    fun getUserById(id: Long): User? = userCache[id]
+
+    fun getChannelById(id: Long): Channel? {
+        var channel: Channel? = null
+        guilds.forEach {
+            channel = it.getChannelById(id) ?: channel
         }
+        return channel
+    }
+
+    fun getRoleById(id: Long): Role? {
+        var role: Role? = null
+        guilds.forEach {
+            role = it.getRolebyId(id) ?: role
+        }
+        return role
+    }
 
 }
