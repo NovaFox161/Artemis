@@ -6,7 +6,6 @@ import khttp.*
 import khttp.responses.Response
 import me.xaanit.artemis.internal.ArtemisConstant
 import me.xaanit.artemis.internal.Client
-import me.xaanit.artemis.internal.Websocket
 import me.xaanit.artemis.internal.exceptions.DiscordException
 import me.xaanit.artemis.internal.exceptions.RateLimitException
 import me.xaanit.artemis.internal.logger.Logger
@@ -82,7 +81,6 @@ class DiscordRequest<out T>(
                 throw RateLimitException()
             }
             try {
-                println(Websocket.decompress(response.raw.readBytes()))
                 logger.trace("&cyan[&time] Got back request json: ${response.jsonObject}")
             } catch(ex: JSONException) {}
             this.response.set(make(response))

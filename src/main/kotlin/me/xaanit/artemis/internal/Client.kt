@@ -15,7 +15,7 @@ class Client(val token: String, val shardCount: Int = 1) {
             return usTracked
         }
 
-    init {
+    fun login() {
         for (i in 0 until manager.client.shardCount) {
             manager.addWebsocket(i + 1)
         }
