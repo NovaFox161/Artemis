@@ -14,8 +14,15 @@ class EmbedObject(
         val image: EmbedImage? = null,
         val thumbnail: EmbedImage? = null,
         val provider: EmbedProvider? = null,
-        val author: EmbedAuthor? = null
+        val author: EmbedAuthor? = null,
+        val fields: Array<EmbedField> = arrayOf()
 ) {
+    class EmbedField(
+            val name: String,
+            val text: String,
+            val inline: Boolean
+    )
+
     class EmbedFooter(
             val text: String? = null,
             val icon_url: String? = null,
@@ -51,6 +58,7 @@ class EmbedObject(
     companion object {
         private val gson = GsonBuilder().create()
     }
+
     internal fun json(): JsonObject {
         return gson.toJsonTree(this).asJsonObject
     }
