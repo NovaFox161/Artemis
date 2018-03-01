@@ -2,21 +2,29 @@ package me.xaanit.artemis.entities.embed
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
+import java.awt.Color
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 class EmbedObject(
         val title: String? = null,
         val type: String = "rich",
         val description: String? = null,
         val url: String? = null,
-        val timestamp: String? = null,
-        val color: Int? = null,
+        private val timestampString: String? = null,
+        private val colorInt: Int? = null,
         val footer: EmbedFooter? = null,
         val image: EmbedImage? = null,
         val thumbnail: EmbedImage? = null,
         val provider: EmbedProvider? = null,
         val author: EmbedAuthor? = null,
-        val fields: Array<EmbedField> = arrayOf()
+        val fields: List<EmbedField> = listOf()
 ) {
+
+
+    @Transient val color = Color(colorInt!!)
+    @Transient val timestamp: OffsetDateTime? = if(timestampString != null) OffsetDateTime.parse(timestampString, DateTimeFormatter.ISO_DATE_TIME) else null
+
     class EmbedField(
             val name: String,
             val text: String,

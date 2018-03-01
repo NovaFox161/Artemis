@@ -8,7 +8,7 @@ class EmbedPojo(
         val color: Int,
         val description: String? = null,
         val author: EmbedAuthorPojo? = null,
-        val fields: Array<EmbedFieldPojo?> = arrayOf(),
+        val fields: Array<EmbedFieldPojo> = arrayOf(),
         val footer: EmbedFooterPojo? = null,
         val image: EmbedImagePojo? = null,
         val thumbnail: EmbedImagePojo? = null

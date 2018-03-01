@@ -83,9 +83,9 @@ class EmbedBuilder {
                 title = title,
                 url = url,
                 author = author,
-                timestamp = timestamp?.toString(),
+                timestampString = timestamp?.toString(),
                 description = desc,
-                color = ((color.red shl 16) + (color.green shl 8) + (color.blue))
+                colorInt = ((color.red shl 16) + (color.green shl 8) + (color.blue))
         )
     }
 

@@ -28,7 +28,7 @@ class MessagePojo(
 ) : Makeable<Message?>() {
     override fun make(): Message? {
         if (author.discriminator == "0000") return null
-        val channel = clientObj.getChannelById(channel_id.toLong())!!
+        val channel = clientObj.getChannelById(channel_id.toLong()) ?: return null
         val guild = channel.guild!!
         val member: Member = guild.getMember(author.id.toLong())!!
         return Message(
@@ -41,7 +41,8 @@ class MessagePojo(
                 formattedContent = content.discordFormat(),
                 mentionsEveryone = mention_everyone,
                 pinned = pinned,
-                timestamp = OffsetDateTime.parse("2018-02-27T19:03:29.378000+00:00", DateTimeFormatter.ISO_DATE_TIME),
+                timestamp = OffsetDateTime.parse(timestamp, DateTimeFormatter.ISO_DATE_TIME),
+                editedTimestamp = if (edited_timestamp != null) OffsetDateTime.parse(edited_timestamp, DateTimeFormatter.ISO_DATE_TIME) else null,
                 tts = tts,
                 webhookId = null,
                 userMentions = listOf(),

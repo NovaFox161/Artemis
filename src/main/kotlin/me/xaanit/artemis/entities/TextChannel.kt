@@ -33,7 +33,7 @@ class TextChannel(
                 make = {
                     val message = Extensions.gson.fromJson(it.jsonObject.toString(), MessagePojo::class.java)
                     message.shardObj = guild?.client?.shards!![((guild.id shr 22) % client.shardCount).toInt()]
-                    message.make()
+                    message.make()!!
                 },
                 formatter = arrayOf(id)
         )
