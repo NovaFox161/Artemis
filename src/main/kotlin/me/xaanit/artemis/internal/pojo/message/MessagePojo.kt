@@ -25,8 +25,9 @@ class MessagePojo(
         val author: UserPojo,
         val attachments: Array<AttachmentPojo>,
         val embeds: Array<EmbedPojo>
-) : Makeable<Message>() {
-    override fun make(): Message {
+) : Makeable<Message?>() {
+    override fun make(): Message? {
+        if (author.discriminator == "0000") return null
         val channel = clientObj.getChannelById(channel_id.toLong())!!
         val guild = channel.guild!!
         val member: Member = guild.getMember(author.id.toLong())!!
@@ -50,7 +51,9 @@ class MessagePojo(
     }
 
     override fun handle() {
-        clientObj.dispatcher.dispatch(GuildMessageReceievedEvent(make()))
+        val message = make()
+        if (message != null)
+            clientObj.dispatcher.dispatch(GuildMessageReceievedEvent(message))
     }
 
     private fun String.discordFormat(): String {
