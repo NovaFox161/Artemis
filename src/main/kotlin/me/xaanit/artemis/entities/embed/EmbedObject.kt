@@ -2,6 +2,7 @@ package me.xaanit.artemis.entities.embed
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
+import me.xaanit.artemis.util.Extensions
 import java.awt.Color
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -63,11 +64,8 @@ class EmbedObject(
             val proxy_icon_url: String? = null
     )
 
-    companion object {
-        private val gson = GsonBuilder().create()
-    }
 
     internal fun json(): JsonObject {
-        return gson.toJsonTree(this).asJsonObject
+        return Extensions.noNulls.toJsonTree(this).asJsonObject
     }
 }

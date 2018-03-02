@@ -2,7 +2,7 @@ package me.xaanit.artemis.entities
 
 import java.util.*
 
-class PermissionOverwrite(val type: Type, val allow: Array<Permission>, val deny: Array<Permission>) {
+class PermissionOverwrite(val type: Type, val id: Long,  val allow: Array<Permission>, val deny: Array<Permission>) {
     enum class Type {
         ROLE,
         USER, // Idk if this exists

@@ -36,5 +36,13 @@ enum class Permission(val offset: Int) {
             values().forEach {  if (((bitset.shr(it.offset)) and 1) == 1L) arr += it }
             return arr
         }
+
+        fun getBitset(overwrite: Array<Permission>): Long {
+            var raw = 0L
+            overwrite.forEach {
+                raw = raw or (1 shl it.offset).toLong()
+            }
+            return raw
+        }
     }
 }

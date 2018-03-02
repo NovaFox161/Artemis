@@ -188,7 +188,9 @@ class Guild(
                 channelName = channel.name,
                 channelOverwrites = channel.permission_overwrites.create(),
                 channelParent = channel.parent_id?.toLong(),
-                channelPosition = channel.position
+                channelPosition = channel.position,
+                bitrate = channel.bitrate ?: 8000,
+                userLimit = channel.user_limit ?: -1
         )
     }
 
@@ -200,14 +202,15 @@ class Guild(
                 isNsfw = channel.nsfw,
                 channelOverwrites = channel.permission_overwrites.create(),
                 channelParent = channel.parent_id?.toLong(),
-                channelPosition = channel.position
+                channelPosition = channel.position,
+                topic = channel.topic ?: ""
         )
     }
 
     private fun Array<PermissionOverwritePojo>.create(): Array<PermissionOverwrite> {
         var overwrites: Array<PermissionOverwrite> = arrayOf()
         forEach {
-            overwrites += PermissionOverwrite(type = PermissionOverwrite.Type.valueOf(it.type.toUpperCase()), allow = Permission.getForBitset(it.allow), deny = Permission.getForBitset(it.deny))
+            overwrites += PermissionOverwrite(type = PermissionOverwrite.Type.valueOf(it.type.toUpperCase()), allow = Permission.getForBitset(it.allow), deny = Permission.getForBitset(it.deny), id = it.id.toLong())
         }
         return overwrites
     }

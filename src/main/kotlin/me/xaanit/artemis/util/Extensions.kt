@@ -11,7 +11,8 @@ import java.util.stream.Stream
 object Extensions {
 
     internal val parser = JsonParser()
-    internal val gson = GsonBuilder().serializeNulls().create()
+    internal val seraliseNulls = GsonBuilder().serializeNulls().create()
+    internal val noNulls = GsonBuilder().create()
 
     fun <T> Array<T>.stream(): Stream<T> = toList().stream()
 
@@ -19,9 +20,9 @@ object Extensions {
 
     fun String.jsonObject(): JsonObject = parser.parse(this).asJsonObject
 
-    fun Any.jsonObject(): JsonObject = gson.toJsonTree(this).asJsonObject
+    fun Any.jsonObject(): JsonObject = seraliseNulls.toJsonTree(this).asJsonObject
 
-    fun Any?.json(): String = gson.toJson(this)
+    fun Any?.json(): String = seraliseNulls.toJson(this)
 
     fun Websocket.send(obj: JsonObject) {
         val json = obj.json()

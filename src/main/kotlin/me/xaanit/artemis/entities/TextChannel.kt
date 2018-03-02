@@ -1,6 +1,7 @@
 package me.xaanit.artemis.entities
 
 import com.github.salomonbrys.kotson.jsonObject
+import me.xaanit.artemis.builders.ChannelEditBuilder
 import me.xaanit.artemis.entities.embed.EmbedObject
 import me.xaanit.artemis.internal.pojo.message.MessagePojo
 import me.xaanit.artemis.internal.requests.DiscordRequest
@@ -14,8 +15,9 @@ class TextChannel(
         channelPosition: Int?,
         channelOverwrites: Array<PermissionOverwrite>,
         isNsfw: Boolean,
-        channelParent: Long? // TODO: Category
-) : Channel(id = channelId, name = channelName, guild = channelGuild, position = channelPosition, overwrites = channelOverwrites, nsfw = isNsfw, private = false, parent = channelParent, client = channelGuild.client) {
+        channelParent: Long?, // TODO: Category
+        topic: String
+) : Channel(id = channelId, name = channelName, guild = channelGuild, position = channelPosition, overwrites = channelOverwrites, nsfw = isNsfw, private = false, parent = channelParent, client = channelGuild.client, topic = topic) {
     override fun sendMessage(
             content: Any,
             embed: EmbedObject?,
@@ -27,15 +29,29 @@ class TextChannel(
                 client = client,
                 body = jsonObject(
                         "content" to content.toString(),
-                         "embed" to embed?.json(),
+                        "embed" to embed?.json(),
                         "tts" to tts
                 ),
                 make = {
-                    val message = Extensions.gson.fromJson(it.jsonObject.toString(), MessagePojo::class.java)
+                    val message = Extensions.seraliseNulls.fromJson(it.jsonObject.toString(), MessagePojo::class.java)
                     message.shardObj = guild?.client?.shards!![((guild.id shr 22) % client.shardCount).toInt()]
                     message.make()!!
                 },
                 formatter = arrayOf(id)
+        )
+    }
+
+    override fun edit(request: ChannelEditBuilder): DiscordRequest<Unit> {
+        return DiscordRequest<Unit>(
+                url = "https://discordapp.com/api/v6/channels/%s",
+                method = MethodType.PATCH,
+                client = client,
+                body = Extensions.noNulls.toJsonTree(request).asJsonObject,
+                formatter = arrayOf(id),
+                make = {
+                  //  val channel = Extensions.seraliseNulls.fromJson(it.jsonObject.toString(), ChannelPojo::class.java)
+                //    channel.shardObj = guild?.client?.shards!![((guild.id shr 22) % client.shardCount).toInt()]
+                }
         )
     }
 
