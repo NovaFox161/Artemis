@@ -31,14 +31,14 @@ class Client(val token: String, val shardCount: Int = 1) {
         get() {
             var list: List<Guild> = listOf()
             shards.stream().forEach { list += it.guildCache.values }
-            return list
+            return list.distinct()
         }
 
     val roles: List<Role>
         get() {
             var list: List<Role> = listOf()
             guilds.stream().forEach { list += it.roleCache.values }
-            return list
+            return list.distinct()
         }
 
 
@@ -46,28 +46,28 @@ class Client(val token: String, val shardCount: Int = 1) {
         get() {
             var list: List<Channel> = listOf()
             guilds.stream().forEach { list += it.channelCache.values }
-            return list
+            return list.distinct()
         }
 
     val textChannels: List<TextChannel>
         get() {
             var list: List<TextChannel> = listOf()
             guilds.forEach { list += it.textChannels }
-            return list
+            return list.distinct()
         }
 
     val voiceChannels: List<VoiceChannel>
         get() {
             var list: List<VoiceChannel> = listOf()
             guilds.forEach { list += it.voiceChannels }
-            return list
+            return list.distinct()
         }
 
     val users: List<User>
         get() {
             var list: List<User> = listOf()
             shards.forEach { list += it.userCache.values }
-            return list
+            return list.distinct()
         }
 
 
@@ -94,6 +94,14 @@ class Client(val token: String, val shardCount: Int = 1) {
             guild = it.getGuildById(id) ?: guild
         }
         return guild
+    }
+
+    fun getUserById(id: Long): User? {
+        var user: User? = null
+        shards.forEach {
+            user = it.getUserById(id) ?: user
+        }
+        return user
     }
 
 

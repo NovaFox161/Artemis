@@ -42,13 +42,14 @@ class DiscordRequest<out T>(
 
 
     init {
+        println("Created request: $url with type $method")
         actionExecutor.schedule({ doAction() }, 0, TimeUnit.MILLISECONDS)
     }
 
     companion object {
         private val logger = Logger.getLogger(DiscordRequest::class.java)
-        private var resets: Map<String, Long> = mapOf()
-        private var requestsLeft: Map<String, Int> = mapOf()
+        private var resets: MutableMap<String, Long> = mutableMapOf()
+        private var requestsLeft: MutableMap<String, Int> = mutableMapOf()
         private val actionExecutor = Executors.newScheduledThreadPool(4)
     }
 
@@ -56,13 +57,15 @@ class DiscordRequest<out T>(
         try {
             val systemSeconds: Long = System.currentTimeMillis() / 1000
             if (resets[url] ?: systemSeconds + 1 < systemSeconds) {
-                requestsLeft += url to 1
+                requestsLeft.put(url, 1)
             }
 
             if (requestsLeft[url] ?: 1 == 0) {
+                requestsLeft.remove(url)
                 val diff = Math.abs((resets[url] ?: systemSeconds) - systemSeconds) * 1000
                 logger.trace("&cyan[&time] Retrying request after $diff ms...")
                 Thread.sleep(diff)
+                resets.remove(url)
             }
 
             logger.trace("&cyan[&time] Trying to send request to route ${url.format(*formatter)} with type ${method} using json $body")
@@ -74,15 +77,16 @@ class DiscordRequest<out T>(
                 PATCH -> patch(url = url.format(*formatter), headers = headers, json = JSONObject(body.toString()))
                 PUT -> put(url = url.format(*formatter), headers = headers, json = JSONObject(body.toString()))
             }
-            requestsLeft += url to (response.headers["X-RateLimit-Remaining"]?.toInt() ?: 1)
-            resets += url to if (requestsLeft[url]!! < 1) response.headers["X-RateLimit-Reset"]?.toLong()!! else 0
+            requestsLeft.put(url, (response.headers["X-RateLimit-Remaining"]?.toInt() ?: 1))
+            resets.put(url, if (requestsLeft[url]!! < 1) response.headers["X-RateLimit-Reset"]?.toLong()!! else 0)
 
             if (response.statusCode == 429) {
                 throw RateLimitException()
             }
             try {
                 logger.trace("&cyan[&time] Got back request json: ${response.jsonObject}")
-            } catch(ex: JSONException) {}
+            } catch (ex: JSONException) {
+            }
             this.response.set(make(response))
         } catch (throwable: Throwable) {
             this.error.set(throwable)
