@@ -42,6 +42,7 @@ class TextChannel(
     }
 
     override fun edit(request: ChannelEditBuilder): DiscordRequest<Unit> {
+        println("Edit called on channel #$name")
         return DiscordRequest<Unit>(
                 url = "https://discordapp.com/api/v6/channels/%s",
                 method = MethodType.PATCH,
@@ -49,8 +50,7 @@ class TextChannel(
                 body = Extensions.noNulls.toJsonTree(request).asJsonObject,
                 formatter = arrayOf(id),
                 make = {
-                  //  val channel = Extensions.seraliseNulls.fromJson(it.jsonObject.toString(), ChannelPojo::class.java)
-                //    channel.shardObj = guild?.client?.shards!![((guild.id shr 22) % client.shardCount).toInt()]
+                  it.jsonObject.toString()
                 }
         )
     }

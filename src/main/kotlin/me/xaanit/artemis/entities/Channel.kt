@@ -25,17 +25,13 @@ abstract class Channel(
     }
 
 
-    open fun sendMessage(
+    abstract fun sendMessage(
             content: Any = "",
             embed: EmbedObject? = null,
             tts: Boolean = false
-    ): DiscordRequest<Message> {
-        throw UnsupportedOperationException()
-    }
+    ): DiscordRequest<Message>
 
-    open fun edit(request: ChannelEditBuilder): DiscordRequest<Unit> {
-        throw UnsupportedOperationException()
-    }
+    abstract fun edit(request: ChannelEditBuilder): DiscordRequest<Unit>
 
     fun edit(): ChannelEditBuilder = ChannelEditBuilder(this)
 }

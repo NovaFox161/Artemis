@@ -67,15 +67,17 @@ data class GuildCreate(
 
         shardObj.guildCache += guild.id to guild
 
-        websocketObj.send(
-                jsonObject(
-                        "op" to 8,
-                        "d" to jsonObject(
-                                "guild_id" to id,
-                                "query" to "",
-                                "limit" to 0
-                        ))
-        )
+        if (members.size < member_count) {
+            websocketObj.send(
+                    jsonObject(
+                            "op" to 8,
+                            "d" to jsonObject(
+                                    "guild_id" to id,
+                                    "query" to "",
+                                    "limit" to 0
+                            ))
+            )
+        }
 
         guild.members.forEach {
             createdUsers += User(

@@ -12,7 +12,7 @@ class Message(
         val formattedContent: String,
         val userMentions: List<User>,
         val roleMentions: List<Role>,
-        val author: Member,
+        val author: User,
         val timestamp: OffsetDateTime,
         val tts: Boolean,
         val mentionsEveryone: Boolean,

@@ -2,6 +2,7 @@ package me.xaanit.artemis.internal.pojo.message
 
 import me.xaanit.artemis.entities.Member
 import me.xaanit.artemis.entities.Message
+import me.xaanit.artemis.entities.User
 import me.xaanit.artemis.entities.events.channels.messages.GuildMessageReceievedEvent
 import me.xaanit.artemis.internal.pojo.Makeable
 import me.xaanit.artemis.internal.pojo.message.embed.EmbedPojo
@@ -27,10 +28,22 @@ class MessagePojo(
         val embeds: Array<EmbedPojo>
 ) : Makeable<Message?>() {
     override fun make(): Message? {
-        if (author.discriminator == "0000") return null
         val channel = clientObj.getChannelById(channel_id.toLong()) ?: return null
         val guild = channel.guild!!
-        val member: Member = guild.getMember(author.id.toLong())!!
+        val member: User = clientObj.getUserById(author.id.toLong()) ?: author.make(clientObj)
+        if(member.discriminator == "0000") {
+            guild.memberCache += member.id to Member(
+                    userId = member.id,
+                    bt = member.bot,
+                    name = member.username,
+                    guild = guild,
+                    roles = arrayOf(),
+                    avatar = member.avatarUrl,
+                    cli = clientObj,
+                    discrim = member.discriminator,
+                    nickname = null
+            )
+        }
         return Message(
                 id = id.toLong(),
                 content = content,

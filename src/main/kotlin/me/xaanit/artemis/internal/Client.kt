@@ -3,10 +3,6 @@ package me.xaanit.artemis.internal
 
 import me.xaanit.artemis.entities.*
 import me.xaanit.artemis.entities.presence.Status
-import me.xaanit.artemis.internal.pojo.message.MessagePojo
-import me.xaanit.artemis.internal.requests.DiscordRequest
-import me.xaanit.artemis.internal.requests.MethodType
-import me.xaanit.artemis.util.Extensions
 
 class Client(val token: String, val shardCount: Int = 1) {
     internal var shards: List<Shard> = listOf()
@@ -35,14 +31,14 @@ class Client(val token: String, val shardCount: Int = 1) {
         get() {
             var list: List<Guild> = listOf()
             shards.stream().forEach { list += it.guildCache.values }
-            return list
+            return list.distinct()
         }
 
     val roles: List<Role>
         get() {
             var list: List<Role> = listOf()
             guilds.stream().forEach { list += it.roleCache.values }
-            return list
+            return list.distinct()
         }
 
 
@@ -50,28 +46,28 @@ class Client(val token: String, val shardCount: Int = 1) {
         get() {
             var list: List<Channel> = listOf()
             guilds.stream().forEach { list += it.channelCache.values }
-            return list
+            return list.distinct()
         }
 
     val textChannels: List<TextChannel>
         get() {
             var list: List<TextChannel> = listOf()
             guilds.forEach { list += it.textChannels }
-            return list
+            return list.distinct()
         }
 
     val voiceChannels: List<VoiceChannel>
         get() {
             var list: List<VoiceChannel> = listOf()
             guilds.forEach { list += it.voiceChannels }
-            return list
+            return list.distinct()
         }
 
     val users: List<User>
         get() {
             var list: List<User> = listOf()
             shards.forEach { list += it.userCache.values }
-            return list
+            return list.distinct()
         }
 
 
@@ -100,22 +96,12 @@ class Client(val token: String, val shardCount: Int = 1) {
         return guild
     }
 
-    fun getMessageById(channel: Channel, message: Long): Message? {
-        return DiscordRequest<Message?>(
-                url = "https://discordapp.com/api/v6/channels/%s/messages/%s",
-                method = MethodType.GET,
-                client = this,
-                make = {
-                    if (it.statusCode == 404) {
-                        null
-                    } else {
-                        val message = Extensions.seraliseNulls.fromJson(it.jsonObject.toString(), MessagePojo::class.java)
-                        message.shardObj = channel.guild?.client?.shards!![((channel.guild.id shr 22) % shardCount).toInt()]
-                        message.make()!!
-                    }
-                },
-                formatter = arrayOf(channel, message)
-        ).block()
+    fun getUserById(id: Long): User? {
+        var user: User? = null
+        shards.forEach {
+            user = it.getUserById(id) ?: user
+        }
+        return user
     }
 
 
