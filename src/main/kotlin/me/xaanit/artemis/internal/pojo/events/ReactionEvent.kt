@@ -27,7 +27,8 @@ class ReactionEvent(
                 requiresColons = emoji.requires_colons,
                 roles = list
         )
-        when (type) {"MESSAGE_REACTION_REMOVE" -> clientObj.dispatcher.dispatch()
+        when (type) {
+            "MESSAGE_REACTION_REMOVE" -> clientObj.dispatcher.dispatch()
         }
     }
 }
