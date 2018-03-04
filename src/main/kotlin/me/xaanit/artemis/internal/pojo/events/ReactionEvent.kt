@@ -28,6 +28,7 @@ class ReactionEvent(
                 roles = list
         )
         when (type) {
+
             "MESSAGE_REACTION_REMOVE" -> clientObj.dispatcher.dispatch()
         }
     }
