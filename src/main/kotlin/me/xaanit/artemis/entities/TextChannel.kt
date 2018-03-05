@@ -3,6 +3,8 @@ package me.xaanit.artemis.entities
 import com.github.salomonbrys.kotson.jsonObject
 import me.xaanit.artemis.builders.ChannelEditBuilder
 import me.xaanit.artemis.entities.embed.EmbedObject
+import me.xaanit.artemis.entities.types.Mentionable
+import me.xaanit.artemis.internal.Endpoints
 import me.xaanit.artemis.internal.pojo.message.MessagePojo
 import me.xaanit.artemis.internal.requests.DiscordRequest
 import me.xaanit.artemis.internal.requests.MethodType
@@ -17,14 +19,16 @@ class TextChannel(
         isNsfw: Boolean,
         channelParent: Long?, // TODO: Category
         topic: String
-) : Channel(id = channelId, name = channelName, guild = channelGuild, position = channelPosition, overwrites = channelOverwrites, nsfw = isNsfw, private = false, parent = channelParent, client = channelGuild.client, topic = topic) {
+) : Channel(id = channelId, name = channelName, guild = channelGuild, position = channelPosition, overwrites = channelOverwrites, nsfw = isNsfw, private = false, parent = channelParent, client = channelGuild.client, topic = topic), Mentionable {
+    override val mention: String = "<#$id>"
+
     override fun sendMessage(
             content: Any,
             embed: EmbedObject?,
             tts: Boolean
     ): DiscordRequest<Message> {
         return DiscordRequest<Message>(
-                url = "https://discordapp.com/api/v6/channels/%s/messages",
+                url = Endpoints.CREATE_MESSAGE,
                 method = MethodType.POST,
                 client = client,
                 body = jsonObject(
@@ -42,16 +46,13 @@ class TextChannel(
     }
 
     override fun edit(request: ChannelEditBuilder): DiscordRequest<Unit> {
-        println("Edit called on channel #$name")
         return DiscordRequest<Unit>(
-                url = "https://discordapp.com/api/v6/channels/%s",
+                url = Endpoints.CHANNEL,
                 method = MethodType.PATCH,
                 client = client,
                 body = Extensions.noNulls.toJsonTree(request).asJsonObject,
-                formatter = arrayOf(id),
-                make = {
-                  it.jsonObject.toString()
-                }
+                make = {},
+                formatter = arrayOf(id)
         )
     }
 

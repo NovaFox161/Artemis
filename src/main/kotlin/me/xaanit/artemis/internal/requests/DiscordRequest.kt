@@ -20,11 +20,11 @@ import java.util.concurrent.atomic.AtomicReference
 class DiscordRequest<out T>(
         private val url: String,
         private val method: MethodType,
-        private val client: Client,
+        client: Client,
         private val body: JsonObject = jsonObject(),
         private val make: (Response) -> T,
         private val formatter: Array<Any?> = arrayOf(),
-        private val contentType: String = "application/json"
+        contentType: String = "application/json"
 ) {
 
     private val response: AtomicReference<T?> = AtomicReference(null)
@@ -126,6 +126,8 @@ class DiscordRequest<out T>(
         }
         val error = error.get()
         if (error != null) throw error
-        return response.get() ?: throw DiscordException("Both error and response are null. Please report that to the developer with the following info: Route url is $url | Method type is $method | Json is $body")
+        return response.get()
+                ?: throw DiscordException("Both error and response are null. Please report that to the developer with the following info: Route url is $url | Method type is $method | Json is $body")
     }
+
 }

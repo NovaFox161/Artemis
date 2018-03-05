@@ -5,13 +5,13 @@ import me.xaanit.artemis.entities.Permission
 import me.xaanit.artemis.entities.PermissionOverwrite
 import me.xaanit.artemis.entities.VoiceChannel
 
-class ChannelEditBuilder(val channel: Channel) {
+class ChannelEditBuilder(@Transient val channel: Channel) {
 
     private var name: String = channel.name
     private var position: Int = channel.position ?: 0
     private var topic: String = channel.topic
     private var nsfw: Boolean = channel.nsfw
-    private var bitrate: Int = (channel as? VoiceChannel)?.bitrate ?: 0
+    private var bitrate: Int = (channel as? VoiceChannel)?.bitrate ?: 8000
     private var user_limit: Int = (channel as? VoiceChannel)?.userLimit ?: 0
     private var permission_overwrites: Array<PermissionOverwriteJson> = arrayOf()
 

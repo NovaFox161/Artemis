@@ -1,7 +1,5 @@
 package me.xaanit.artemis.internal.pojo.events
 
-import me.xaanit.artemis.entities.Reaction
-import me.xaanit.artemis.entities.Role
 import me.xaanit.artemis.internal.pojo.EmojiPojo
 import me.xaanit.artemis.internal.pojo.Handleable
 
@@ -13,7 +11,7 @@ class ReactionEvent(
         val channel_id: String
 ) : Handleable() {
     override fun handle() {
-        val message = clientObj.getMessageById(clientObj.getChannelById(channel_id.toLong())!!, message_id.toLong())!!
+    /*    val message = clientObj.getMessageById(clientObj.getChannelById(channel_id.toLong())!!, message_id.toLong())!!
         var list: List<Role> = listOf()
         emoji.roles.forEach {
             list += message.channel.guild?.getRolebyId(it.toLong())!!
@@ -28,8 +26,7 @@ class ReactionEvent(
                 roles = list
         )
         when (type) {
-
             "MESSAGE_REACTION_REMOVE" -> clientObj.dispatcher.dispatch()
-        }
+        }*/
     }
 }
