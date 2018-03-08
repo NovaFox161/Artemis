@@ -15,7 +15,7 @@ class TextChannel(
         channelName: String,
         channelGuild: Guild,
         channelPosition: Int?,
-        channelOverwrites: Array<PermissionOverwrite>,
+        channelOverwrites: List<PermissionOverwrite>,
         isNsfw: Boolean,
         channelParent: Long?, // TODO: Category
         topic: String
@@ -41,7 +41,7 @@ class TextChannel(
                     message.shardObj = guild?.client?.shards!![((guild.id shr 22) % client.shardCount).toInt()]
                     message.make()!!
                 },
-                formatter = arrayOf(id)
+                formatter = listOf(id)
         )
     }
 
@@ -52,7 +52,7 @@ class TextChannel(
                 client = client,
                 body = Extensions.noNulls.toJsonTree(request).asJsonObject,
                 make = {},
-                formatter = arrayOf(id)
+                formatter = listOf(id)
         )
     }
 

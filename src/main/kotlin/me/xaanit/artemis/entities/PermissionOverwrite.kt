@@ -1,8 +1,6 @@
 package me.xaanit.artemis.entities
 
-import java.util.*
-
-class PermissionOverwrite(val type: Type, val id: Long,  val allow: Array<Permission>, val deny: Array<Permission>) {
+class PermissionOverwrite(val type: Type, val id: Long,  val allow: List<Permission>, val deny: List<Permission>) {
     enum class Type {
         ROLE,
         USER, // Idk if this exists
@@ -10,6 +8,6 @@ class PermissionOverwrite(val type: Type, val id: Long,  val allow: Array<Permis
     }
 
     override fun toString(): String {
-        return "PermissionOverwrite(type=$type, allow=${Arrays.toString(allow)}, deny=${Arrays.toString(deny)})"
+        return "PermissionOverwrite(type=$type, allow=${this.allow}, deny=${this.deny})"
     }
 }

@@ -13,7 +13,7 @@ class ChannelEditBuilder(@Transient val channel: Channel) {
     private var nsfw: Boolean = channel.nsfw
     private var bitrate: Int = (channel as? VoiceChannel)?.bitrate ?: 8000
     private var user_limit: Int = (channel as? VoiceChannel)?.userLimit ?: 0
-    private var permission_overwrites: Array<PermissionOverwriteJson> = arrayOf()
+    private var permission_overwrites: List<PermissionOverwriteJson> = listOf()
 
 
     fun withName(name: String): ChannelEditBuilder {
@@ -47,7 +47,7 @@ class ChannelEditBuilder(@Transient val channel: Channel) {
     }
 
     fun withPermissionOverrides(vararg overwrites: PermissionOverwrite): ChannelEditBuilder {
-        var json: Array<PermissionOverwriteJson> = arrayOf()
+        var json: List<PermissionOverwriteJson> = listOf()
         overwrites.forEach {
             json += PermissionOverwriteJson(id = it.id.toString(), type = it.type.toString().toLowerCase(), allow = Permission.getBitset(it.allow), deny = Permission.getBitset(it.deny))
         }
