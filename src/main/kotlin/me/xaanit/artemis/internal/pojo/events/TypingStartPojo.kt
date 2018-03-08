@@ -6,7 +6,7 @@ import me.xaanit.artemis.entities.events.channels.GuildTypingStartEvent
 import me.xaanit.artemis.internal.pojo.Handleable
 import java.time.OffsetDateTime
 
-class TypingStart(
+class TypingStartPojo(
         val user_id: String,
         val timestamp: Long,
         val channel_id: String

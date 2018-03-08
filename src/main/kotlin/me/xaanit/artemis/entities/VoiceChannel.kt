@@ -2,6 +2,7 @@ package me.xaanit.artemis.entities
 
 import me.xaanit.artemis.builders.ChannelEditBuilder
 import me.xaanit.artemis.entities.embed.EmbedObject
+import me.xaanit.artemis.internal.Endpoints
 import me.xaanit.artemis.internal.requests.DiscordRequest
 import me.xaanit.artemis.internal.requests.MethodType
 import me.xaanit.artemis.util.Extensions
@@ -16,6 +17,16 @@ class VoiceChannel(
         val bitrate: Int,
         val userLimit: Int
 ) : Channel(id = channelId, name = channelName, guild = channelGuild, position = channelPosition, overwrites = channelOverwrites, nsfw = false, private = false, parent = channelParent, client = channelGuild.client, topic = "") {
+    override fun delete(): DiscordRequest<Unit> {
+        return DiscordRequest<Unit>(
+                url = Endpoints.DELETE_CHANNEL,
+                method = MethodType.DELETE,
+                client = client,
+                make = {},
+                formatter = arrayOf(id)
+        )
+    }
+
     override fun sendMessage(content: Any, embed: EmbedObject?, tts: Boolean): DiscordRequest<Message> {
         throw UnsupportedOperationException()
     }

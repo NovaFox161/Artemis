@@ -1,9 +1,7 @@
 package me.xaanit.artemis.builders
 
-import me.xaanit.artemis.entities.Channel
-import me.xaanit.artemis.entities.Permission
-import me.xaanit.artemis.entities.PermissionOverwrite
-import me.xaanit.artemis.entities.VoiceChannel
+import me.xaanit.artemis.entities.*
+import java.util.*
 
 class ChannelEditBuilder(@Transient val channel: Channel) {
 
@@ -46,12 +44,35 @@ class ChannelEditBuilder(@Transient val channel: Channel) {
         return this
     }
 
-    fun withPermissionOverrides(vararg overwrites: PermissionOverwrite): ChannelEditBuilder {
-        var json: Array<PermissionOverwriteJson> = arrayOf()
-        overwrites.forEach {
-            json += PermissionOverwriteJson(id = it.id.toString(), type = it.type.toString().toLowerCase(), allow = Permission.getBitset(it.allow), deny = Permission.getBitset(it.deny))
-        }
-        this.permission_overwrites = json
+    fun withUserOverride(
+            user: User,
+            allow: EnumSet<Permission> = EnumSet.noneOf(Permission::class.java),
+            deny: EnumSet<Permission> = EnumSet.noneOf(Permission::class.java)
+    ): ChannelEditBuilder = withPermissionOverride(PermissionOverwrite(
+            type = PermissionOverwrite.Type.USER,
+            id = user.id,
+            allow = allow,
+            deny = deny
+    ))
+
+    fun withRoleOverride(
+            role: Role,
+            allow: EnumSet<Permission> = EnumSet.noneOf(Permission::class.java),
+            deny: EnumSet<Permission> = EnumSet.noneOf(Permission::class.java)
+    ): ChannelEditBuilder = withPermissionOverride(PermissionOverwrite(
+            type = PermissionOverwrite.Type.ROLE,
+            id = role.id,
+            allow = allow,
+            deny = deny
+    ))
+
+    internal fun withPermissionOverride(overwrite: PermissionOverwrite): ChannelEditBuilder {
+        this.permission_overwrites += PermissionOverwriteJson(
+                id = overwrite.id.toString(),
+                type = overwrite.type.toString().toLowerCase(),
+                allow = Permission.getBitset(overwrite.allow),
+                deny = Permission.getBitset(overwrite.deny)
+        )
         return this
     }
 

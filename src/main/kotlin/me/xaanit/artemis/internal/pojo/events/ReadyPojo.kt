@@ -4,7 +4,7 @@ import me.xaanit.artemis.entities.User
 import me.xaanit.artemis.internal.DiscordConstant
 import me.xaanit.artemis.internal.pojo.Handleable
 
-class Ready(
+class ReadyPojo(
         val v: Int,
         val userSettings: UserSettings,
         val user: UserPojoExtended,

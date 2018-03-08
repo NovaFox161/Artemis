@@ -3,7 +3,7 @@ package me.xaanit.artemis.internal.pojo.events
 import me.xaanit.artemis.internal.pojo.EmojiPojo
 import me.xaanit.artemis.internal.pojo.Handleable
 
-class ReactionEvent(
+class ReactionEventPojo(
         var type: String = "",
         val user_id: String,
         val message_id: String,

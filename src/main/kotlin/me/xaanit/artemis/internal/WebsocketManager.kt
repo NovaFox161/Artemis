@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class WebsocketManager(val uri: URI, val client: Client) {
 
-    private var websockets: Map<Int, Websocket> = mapOf()
+    internal var websockets: Map<Int, Websocket> = mapOf()
     internal val counter = AtomicInteger(0)
     internal val identified = AtomicBoolean(false)
     internal val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(4)

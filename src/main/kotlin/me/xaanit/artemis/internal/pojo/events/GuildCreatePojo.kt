@@ -16,7 +16,7 @@ import me.xaanit.artemis.internal.pojo.game.GamePojo
 import me.xaanit.artemis.internal.pojo.user.MemberPojo
 import me.xaanit.artemis.util.Extensions.send
 
-data class GuildCreate(
+data class GuildCreatePojo(
         val voice_states: List<VoiceStatePojo>,
         val verification_level: Int,
         val unavaliable: Boolean,

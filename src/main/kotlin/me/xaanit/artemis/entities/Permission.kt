@@ -1,5 +1,7 @@
 package me.xaanit.artemis.entities
 
+import java.util.*
+
 enum class Permission(val offset: Int) {
     CREATE_INVITE(0),
     KICK_MEMBERS(1),
@@ -31,13 +33,13 @@ enum class Permission(val offset: Int) {
     MANAGE_EMOJIS(30);
 
     companion object {
-        fun getForBitset(bitset: Long): Array<Permission> {
-            var arr: Array<Permission> = arrayOf()
-            values().forEach {  if (((bitset.shr(it.offset)) and 1) == 1L) arr += it }
-            return arr
+        fun getForBitset(bitset: Long): EnumSet<Permission> {
+            val arr: MutableList<Permission> = mutableListOf()
+            values().forEach { if (((bitset.shr(it.offset)) and 1) == 1L) arr.add(it) }
+            return if(arr.isEmpty()) EnumSet.noneOf(Permission::class.java) else EnumSet.copyOf(arr)
         }
 
-        fun getBitset(overwrite: Array<Permission>): Long {
+        fun getBitset(overwrite: EnumSet<Permission>): Long {
             var raw = 0L
             overwrite.forEach {
                 raw = raw or (1 shl it.offset).toLong()

@@ -12,16 +12,11 @@ import me.xaanit.artemis.internal.pojo.events.*
 import me.xaanit.artemis.internal.pojo.message.MessagePojo
 import me.xaanit.artemis.util.Extensions.json
 import me.xaanit.artemis.util.Extensions.jsonObject
-import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.IOException
-import java.io.InputStreamReader
 import java.net.URI
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.zip.GZIPInputStream
 
 
 class Websocket(uri: URI, val shard: Int, private val client: Client, val manager: WebsocketManager) : WebSocketAdapter() {
@@ -32,23 +27,11 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     internal val counter = AtomicInteger(0)
     internal var guildSize: Int = -1
     internal val websocket: WebSocket
+    internal var connected: Boolean = false
 
     companion object {
         private val gson = GsonBuilder().serializeNulls().create()
         private val factory = WebSocketFactory()
-
-        @Throws(IOException::class)
-        internal fun decompress(compressed: ByteArray): String {
-            val bis = ByteArrayInputStream(compressed)
-            val gis = GZIPInputStream(bis)
-            val br = BufferedReader(InputStreamReader(gis, "UTF-8"))
-            val sb = StringBuilder()
-            br.readLines().forEach { sb.append(it) }
-            br.close()
-            gis.close()
-            bis.close()
-            return sb.toString()
-        }
     }
 
 
@@ -63,6 +46,7 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     override fun onConnected(websocket: WebSocket?, headers: MutableMap<String, MutableList<String>>?) {
         logger.trace("&cyan[&time] Got handshake from websocket with shard #$shard.")
         logger.trace("&cyan[&time] HTTP Headers: ${headers?.map { "${it.key}: ${it.value}" }?.joinToString(", ")}")
+        connected = true
     }
 
     override fun onDisconnected(websocket: WebSocket?, serverCloseFrame: WebSocketFrame?, clientCloseFrame: WebSocketFrame?, closedByServer: Boolean) {
@@ -77,6 +61,12 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
         }
         logger.trace("&cyan[&time] Remote: $closedByServer")
         sendHeartbeat.set(false)
+        connected = false
+        var `continue` = false
+        this.manager.websockets.values.forEach {
+            if(it.connected) `continue` = true
+        }
+        if(!`continue`) System.exit(0)
     }
 
     override fun onTextMessage(websocket: WebSocket?, message: String?) {
@@ -163,11 +153,11 @@ class Websocket(uri: URI, val shard: Int, private val client: Client, val manage
     private fun handleEvents(event: String, data: String) {
         try {
             val clazz: Class<out Handleable> = when (event) {
-                "GUILD_CREATE" -> GuildCreate::class.java
+                "GUILD_CREATE" -> GuildCreatePojo::class.java
                 "MESSAGE_DELETE" -> MessageDelete::class.java
-                "READY" -> Ready::class.java
+                "READY" -> ReadyPojo::class.java
                 "MESSAGE_CREATE" -> MessagePojo::class.java
-                "TYPING_START" -> TypingStart::class.java
+                "TYPING_START" -> TypingStartPojo::class.java
                 "GUILD_MEMBERS_CHUNK" -> GuildMemberChunkPojo::class.java
                 else -> null
             } ?: return
