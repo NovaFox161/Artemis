@@ -21,11 +21,11 @@ class MessagePojo(
         val edited_timestamp: String?,
         val content: String,
         val channel_id: String,
-        val mentions: Array<UserPojo>,
-        val mention_roles: Array<String>,
+        val mentions: List<UserPojo>,
+        val mention_roles: List<String>,
         val author: UserPojo,
-        val attachments: Array<AttachmentPojo>,
-        val embeds: Array<EmbedPojo>
+        val attachments: List<AttachmentPojo>,
+        val embeds: List<EmbedPojo>
 ) : Makeable<Message?>() {
     override fun make(): Message? {
         val channel = clientObj.getChannelById(channel_id.toLong()) ?: return null
@@ -37,7 +37,7 @@ class MessagePojo(
                     bt = member.bot,
                     name = member.username,
                     guild = guild,
-                    roles = arrayOf(),
+                    roles = listOf(),
                     avatar = member.avatarUrl,
                     cli = clientObj,
                     discrim = member.discriminator,

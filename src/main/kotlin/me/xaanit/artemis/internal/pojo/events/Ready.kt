@@ -8,13 +8,13 @@ class Ready(
         val v: Int,
         val userSettings: UserSettings,
         val user: UserPojoExtended,
-        val shard: Array<Int>,
+        val shard: List<Int>,
         val session_id: String,
-        val relationships: Array<String>,
-        val private_channels: Array<String>,
-        val presences: Array<String>,
-        val guilds: Array<UnavaliableGuild>,
-        val _trace: Array<String>
+        val relationships: List<String>,
+        val private_channels: List<String>,
+        val presences: List<String>,
+        val guilds: List<UnavaliableGuild>,
+        val _trace: List<String>
 ) : Handleable() {
     override fun handle() {
         val user = User(

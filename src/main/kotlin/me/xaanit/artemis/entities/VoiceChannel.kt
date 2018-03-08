@@ -11,7 +11,7 @@ class VoiceChannel(
         private val channelName: String,
         private val channelGuild: Guild,
         private val channelPosition: Int?,
-        private val channelOverwrites: Array<PermissionOverwrite>,
+        private val channelOverwrites: List<PermissionOverwrite>,
         private val channelParent: Long?, // TODO: Category
         val bitrate: Int,
         val userLimit: Int
@@ -26,7 +26,7 @@ class VoiceChannel(
                 method = MethodType.PATCH,
                 client = client,
                 body = Extensions.noNulls.toJsonTree(request).asJsonObject,
-                formatter = arrayOf(id),
+                formatter = listOf(id),
                 make = {}
         )
     }

@@ -15,7 +15,7 @@ class EmbedBuilder {
     private var author: EmbedAuthor? = null
     private var thumbnail: EmbedImage? = null
     private var image: EmbedImage? = null
-    private var fields: Array<EmbedField> = arrayOf()
+    private var fields: List<EmbedField> = listOf()
 
     fun withAuthor(
             name: String? = null,

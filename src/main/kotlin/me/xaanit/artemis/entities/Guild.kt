@@ -12,7 +12,6 @@ import me.xaanit.artemis.internal.pojo.game.GamePojo
 import me.xaanit.artemis.internal.pojo.user.MemberPojo
 import me.xaanit.artemis.util.Extensions.shard
 import java.awt.Color
-import java.util.*
 
 class Guild(
         val id: Long,
@@ -28,55 +27,59 @@ class Guild(
         private val systemChannelId: Long,
         private val ownerId: Long,
         private val builtChannels: Map<Long, Channel>? = null,
-        private val channelData: Array<ChannelPojo>? = null,
+        private val channelData: List<ChannelPojo>? = null,
         private val builtRoles: Map<Long, Role>? = null,
-        private val roleData: Array<RolePojo>? = null,
+        private val roleData: List<RolePojo>? = null,
         private val builtMembers: Map<Long, Member>? = null,
-        private val memberData: Array<MemberPojo>? = null,
+        private val memberData: List<MemberPojo>? = null,
         private val builtVoiceStates: Map<Long, VoiceState>? = null,
-        private val voiceStateData: Array<VoiceStatePojo>? = null,
+        private val voiceStateData: List<VoiceStatePojo>? = null,
         private val builtGames: Map<Long, Game>? = null,
-        private val gameData: Array<GamePojo>? = null
+        private val gameData: List<GamePojo>? = null
 ) {
     internal var voiceStates: Map<Long, VoiceState> = mapOf()
     internal var games: Map<Long, Game> = mapOf()
 
     internal val channelCache: Map<Long, Channel>
 
-    val channels: Array<Channel>
-        get() = channelCache.values.toTypedArray()
+    val channels: List<Channel>
+        get() = channelCache.values.toList()
 
-    val textChannels: Array<TextChannel>
+    val textChannels: List<TextChannel>
         get() {
-            var arr: Array<TextChannel> = arrayOf()
+            var arr: List<TextChannel> = listOf()
             channels.filter { it is TextChannel }.forEach { arr += it as TextChannel }
             return arr
         }
 
-    val voiceChannels: Array<VoiceChannel>
+    val voiceChannels: List<VoiceChannel>
         get() {
-            var arr: Array<VoiceChannel> = arrayOf()
+            var arr: List<VoiceChannel> = listOf()
             channels.filter { it is VoiceChannel }.forEach { arr += it as VoiceChannel }
             return arr
         }
 
     internal var roleCache: Map<Long, Role> = mapOf()
-    val roles: Array<Role>
-        get() = roleCache.values.toTypedArray()
+    val roles: List<Role>
+        get() = roleCache.values.toList()
 
     internal var memberCache: Map<Long, Member> = mapOf()
 
-    val members: Array<Member>
-        get() = memberCache.values.toTypedArray()
+    val members: List<Member>
+        get() = memberCache.values.toList()
     val owner: Member
     val systemChannel: TextChannel?
     val shard: Shard = this.shard()
 
 
     init {
-        channelCache = builtChannels ?: channelData.make()
-        roleCache = builtRoles ?: roleData.make()
-        memberCache = builtMembers ?: memberData.make()
+        /*
+        Dev note (Nova): Had to rename the #make() functions since when converted to List from Array it thinks
+            that they are the same. Small change so it shouldn't impact anything.
+         */
+        channelCache = builtChannels ?: channelData.makeChannel()
+        roleCache = builtRoles ?: roleData.makeRole()
+        memberCache = builtMembers ?: memberData.makeMember()
         owner = members.find { it.id == ownerId }!!
         systemChannel = textChannels.find { it.id == systemChannelId }
         // voiceStates = builtVoiceStates ?: voiceStateData.make()
@@ -92,7 +95,7 @@ class Guild(
 
     private fun MemberPojo.handle() {
         val avatarUrl = if (user.avatar == null) DiscordConstant.USER_DEFAULT_ICON.format(user.discriminator.toInt() % 5) else (DiscordConstant.USER_ICON.format(user.id, user.avatar, if (user.avatar.startsWith("a_")) "gif" else "png"))
-        var roles: Array<Role> = arrayOf()
+        var roles: List<Role> = listOf()
         this.roles.forEach {
             val role = this@Guild.roles.find { r -> r.id == it.toLong() }
             if (role != null)
@@ -118,7 +121,7 @@ class Guild(
     fun getRolebyId(id: Long): Role? = roleCache[id]
     fun getChannelById(id: Long): Channel? = channelCache[id]
 
-    private fun Array<ChannelPojo>?.make(): Map<Long, Channel> {
+    private fun List<ChannelPojo>?.makeChannel(): Map<Long, Channel> {
         if (this == null) return mapOf()
         var arr: Map<Long, Channel> = mapOf()
         forEach {
@@ -128,14 +131,14 @@ class Guild(
         return arr
     }
 
-    private fun Array<MemberPojo>?.make(): Map<Long, Member> {
+    private fun List<MemberPojo>?.makeMember(): Map<Long, Member> {
         if (this == null) return mapOf()
 
 
         var arr: Map<Long, Member> = mapOf()
 
         forEach { it ->
-            var roles: Array<Role> = arrayOf()
+            var roles: List<Role> = listOf()
             it.roles.forEach {
                 val role = this@Guild.roles.find { r -> r.id == it.toLong() }
                 if (role != null)
@@ -158,7 +161,7 @@ class Guild(
         return arr
     }
 
-    private fun Array<RolePojo>?.make(): Map<Long, Role> {
+    private fun List<RolePojo>?.makeRole(): Map<Long, Role> {
         if (this == null) return mapOf()
 
 
@@ -207,8 +210,8 @@ class Guild(
         )
     }
 
-    private fun Array<PermissionOverwritePojo>.create(): Array<PermissionOverwrite> {
-        var overwrites: Array<PermissionOverwrite> = arrayOf()
+    private fun List<PermissionOverwritePojo>.create(): List<PermissionOverwrite> {
+        var overwrites: List<PermissionOverwrite> = listOf()
         forEach {
             overwrites += PermissionOverwrite(type = PermissionOverwrite.Type.valueOf(it.type.toUpperCase()), allow = Permission.getForBitset(it.allow), deny = Permission.getForBitset(it.deny), id = it.id.toLong())
         }
@@ -216,7 +219,7 @@ class Guild(
     }
 
     override fun toString(): String {
-        return "Guild(id=$id, name='$name', avatarUrl='$avatarUrl', voiceRegion='$voiceRegion', afkChannel=$afkChannel, afkTimeout=$afkTimeout, welcomeMessagesEnabled=$welcomeMessagesEnabled, explicitContentFilterLevel=$explicitContentFilterLevel, systemChannel=$systemChannel, large=$large, client=$client, channels=${Arrays.toString(channels)}, roles=${Arrays.toString(roles)}, members=${Arrays.toString(members)})"
+        return "Guild(id=$id, name='$name', avatarUrl='$avatarUrl', voiceRegion='$voiceRegion', afkChannel=$afkChannel, afkTimeout=$afkTimeout, welcomeMessagesEnabled=$welcomeMessagesEnabled, explicitContentFilterLevel=$explicitContentFilterLevel, systemChannel=$systemChannel, large=$large, client=$client, channels=${this.channels}, roles=${this.roles}, members=${this.memberCache})"
     }
 
 }
