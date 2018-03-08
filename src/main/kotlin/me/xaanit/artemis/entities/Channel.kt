@@ -3,9 +3,7 @@ package me.xaanit.artemis.entities
 import me.xaanit.artemis.builders.ChannelEditBuilder
 import me.xaanit.artemis.entities.embed.EmbedObject
 import me.xaanit.artemis.internal.Client
-import me.xaanit.artemis.internal.Endpoints
 import me.xaanit.artemis.internal.requests.DiscordRequest
-import me.xaanit.artemis.internal.requests.MethodType
 import java.util.*
 
 
@@ -34,8 +32,6 @@ abstract class Channel(
     ): DiscordRequest<Message>
 
     abstract fun edit(request: ChannelEditBuilder): DiscordRequest<Unit>
-
-    abstract fun delete(): DiscordRequest<Unit>
 
     fun edit(): ChannelEditBuilder = ChannelEditBuilder(this)
 }

@@ -45,16 +45,16 @@ data class GuildCreatePojo(
 ) : Handleable() {
 
     override fun handle() {
-        var createdUsers: Array<User> = arrayOf()
+        var createdUsers: List<User> = listOf()
         val guild = Guild(
                 id = id.toLong(),
                 name = name,
                 avatarUrl = DiscordConstant.GUILD_ICON.format(id, icon),
                 afkChannel = afk_channel_id?.toLong(),
                 afkTimeout = afk_timeout,
-                channelData = channels.toTypedArray(),
-                roleData = roles.toTypedArray(),
-                memberData = members.toTypedArray(),
+                channelData = channels.toList(),
+                roleData = roles.toList(),
+                memberData = members.toList(),
                 explicitContentFilterLevel = explicit_content_filter,
                 large = large,
                 client = clientObj,

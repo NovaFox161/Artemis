@@ -10,13 +10,13 @@ class Role(
         val color: Color,
         val hoisted: Boolean,
         val position: Int,
-        val permissions: EnumSet<Permission>,
+        val permissions: Array<Permission>,
         val managed: Boolean,
         val mentionable: Boolean,
         val guild: Guild,
         val client: Client
 ) {
     override fun toString(): String {
-        return "Role(id=$id, name='$name', color=$color, hoisted=$hoisted, position=$position, permissions=$permissions, managed=$managed, mentionable=$mentionable, client=$client)"
+        return "Role(id=$id, name='$name', color=$color, hoisted=$hoisted, position=$position, permissions=${Arrays.toString(permissions)}, managed=$managed, mentionable=$mentionable, client=$client)"
     }
 }

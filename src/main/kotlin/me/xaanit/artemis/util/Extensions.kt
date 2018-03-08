@@ -14,8 +14,6 @@ object Extensions {
     internal val seraliseNulls = GsonBuilder().serializeNulls().create()
     internal val noNulls = GsonBuilder().create()
 
-    fun <T> Array<T>.stream(): Stream<T> = toList().stream()
-
     fun <T> Stream<T>.firstFound(): T? = findFirst().orElse(null)
 
     fun String.jsonObject(): JsonObject = parser.parse(this).asJsonObject
