@@ -1,13 +1,16 @@
 package me.xaanit.artemis.entities
 
 class VoiceState(
-        val member: Member,
         val suppress: Boolean = false,
-        val session_id: String = "",
-        val self_video: Boolean = false,
-        val self_mute: Boolean = false,
-        val self_deaf: Boolean = false,
+        val sessionId: String = "",
+        val selfDeaf: Boolean = false,
+        val selfVideo: Boolean = false,
+        val selfMute: Boolean = false,
         val mute: Boolean = false,
         val deaf: Boolean = false,
         val channel: VoiceChannel? = null
-)
+){
+    internal lateinit var memberTracked: Member
+    val member: Member
+        get() = memberTracked
+}

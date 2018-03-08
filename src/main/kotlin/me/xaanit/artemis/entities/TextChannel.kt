@@ -20,16 +20,6 @@ class TextChannel(
         channelParent: Long?, // TODO: Category
         topic: String
 ) : Channel(id = channelId, name = channelName, guild = channelGuild, position = channelPosition, overwrites = channelOverwrites, nsfw = isNsfw, private = false, parent = channelParent, client = channelGuild.client, topic = topic), Mentionable {
-    override fun delete(): DiscordRequest<Unit> {
-        return DiscordRequest<Unit>(
-                url = Endpoints.DELETE_CHANNEL,
-                method = MethodType.DELETE,
-                client = client,
-                make = {},
-                formatter = arrayOf(id)
-        )
-    }
-
     override val mention: String = "<#$id>"
 
     override fun sendMessage(
@@ -51,7 +41,7 @@ class TextChannel(
                     message.shardObj = guild?.client?.shards!![((guild.id shr 22) % client.shardCount).toInt()]
                     message.make()!!
                 },
-                formatter = listOf(id)
+                formatter = arrayOf(id)
         )
     }
 
@@ -62,7 +52,7 @@ class TextChannel(
                 client = client,
                 body = Extensions.noNulls.toJsonTree(request).asJsonObject,
                 make = {},
-                formatter = listOf(id)
+                formatter = arrayOf(id)
         )
     }
 

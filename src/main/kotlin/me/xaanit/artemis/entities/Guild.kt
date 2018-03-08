@@ -1,6 +1,5 @@
 package me.xaanit.artemis.entities
 
-import me.xaanit.artemis.entities.presence.Game
 import me.xaanit.artemis.internal.Client
 import me.xaanit.artemis.internal.DiscordConstant
 import me.xaanit.artemis.internal.pojo.RolePojo
@@ -8,7 +7,7 @@ import me.xaanit.artemis.internal.pojo.VoiceStatePojo
 import me.xaanit.artemis.internal.pojo.channels.ChannelPojo
 import me.xaanit.artemis.internal.pojo.channels.PermissionOverwritePojo
 import me.xaanit.artemis.internal.pojo.events.GuildMemberChunkPojo
-import me.xaanit.artemis.internal.pojo.game.GamePojo
+import me.xaanit.artemis.internal.pojo.events.PresenceUpdatePojo
 import me.xaanit.artemis.internal.pojo.user.MemberPojo
 import me.xaanit.artemis.util.Extensions.shard
 import java.awt.Color
@@ -34,11 +33,11 @@ class Guild(
         private val memberData: List<MemberPojo>? = null,
         private val builtVoiceStates: Map<Long, VoiceState>? = null,
         private val voiceStateData: List<VoiceStatePojo>? = null,
-        private val builtGames: Map<Long, Game>? = null,
-        private val gameData: List<GamePojo>? = null
+        private val builtPresences: Map<Long, Presence>? = null,
+        private val presenceData: List<PresenceUpdatePojo>? = null
 ) {
     internal var voiceStates: Map<Long, VoiceState> = mapOf()
-    internal var games: Map<Long, Game> = mapOf()
+    internal var presences: Map<Long, Presence> = mapOf()
 
     internal val channelCache: Map<Long, Channel>
 
@@ -73,17 +72,13 @@ class Guild(
 
 
     init {
-        /*
-        Dev note (Nova): Had to rename the #make() functions since when converted to List from Array it thinks
-            that they are the same. Small change so it shouldn't impact anything.
-         */
         channelCache = builtChannels ?: channelData.makeChannel()
         roleCache = builtRoles ?: roleData.makeRole()
         memberCache = builtMembers ?: memberData.makeMember()
         owner = members.find { it.id == ownerId }!!
         systemChannel = textChannels.find { it.id == systemChannelId }
-        // voiceStates = builtVoiceStates ?: voiceStateData.make()
-        // games = builtGames ?: gameData.make()
+         voiceStates = builtVoiceStates ?: voiceStateData.makeVoiceStates()
+         presences = builtPresences ?: presenceData.makePresences()
     }
 
 
@@ -91,6 +86,34 @@ class Guild(
         chunk.members.forEach {
             it.handle()
         }
+    }
+
+    private fun List<VoiceStatePojo>?.makeVoiceStates(): Map<Long, VoiceState> {
+        if(this == null) return mapOf()
+        var map: Map<Long, VoiceState> = mapOf()
+        forEach {
+            val voice = VoiceState(
+                    suppress = it.suppress,
+                    channel = channelCache[it.channel_id.toLong()] as? VoiceChannel,
+                    deaf = it.deaf,
+                    mute = it.mute,
+                    selfDeaf = it.self_deaf,
+                    selfMute = it.self_mute,
+                    selfVideo = it.self_video,
+                    sessionId = it.session_id
+            )
+            voice.memberTracked = memberCache[it.user_id.toLong()]!!
+            map += it.user_id.toLong() to voice
+        }
+        return map
+    }
+
+    fun List<PresenceUpdatePojo>?.makePresences(): Map<Long, Presence> {
+        if(this == null) return mapOf()
+
+
+        var map: Map<Long, Presence> = mapOf()
+        return map // TODO
     }
 
     private fun MemberPojo.handle() {
