@@ -23,7 +23,7 @@ class DiscordRequest<out T>(
         client: Client,
         private val body: JsonObject = jsonObject(),
         private val make: (Response) -> T,
-        private val formatter: List<Any?> = listOf(),
+        private val formatter: Array<Any?> = arrayOf(),
         contentType: String = "application/json"
 ) {
 
@@ -68,15 +68,14 @@ class DiscordRequest<out T>(
                 resets.remove(url)
             }
 
-            val formatterArray = formatter.toTypedArray();
-            logger.trace("&cyan[&time] Trying to send request to route ${url.format(*formatterArray)} with type ${method} using json $body")
+            logger.trace("&cyan[&time] Trying to send request to route ${url.format(*formatter)} with type ${method} using json $body")
 
             val response = when (method) {
-                GET -> get(url = url.format(*formatterArray), headers = headers)
-                POST -> post(url = url.format(*formatterArray), headers = headers, json = JSONObject(body.toString()))
-                DELETE -> delete(url = url.format(*formatterArray), headers = headers, json = JSONObject(body.toString()))
-                PATCH -> patch(url = url.format(*formatterArray), headers = headers, json = JSONObject(body.toString()))
-                PUT -> put(url = url.format(*formatterArray), headers = headers, json = JSONObject(body.toString()))
+                GET -> get(url = url.format(*formatter), headers = headers)
+                POST -> post(url = url.format(*formatter), headers = headers, json = JSONObject(body.toString()))
+                DELETE -> delete(url = url.format(*formatter), headers = headers, json = JSONObject(body.toString()))
+                PATCH -> patch(url = url.format(*formatter), headers = headers, json = JSONObject(body.toString()))
+                PUT -> put(url = url.format(*formatter), headers = headers, json = JSONObject(body.toString()))
             }
             requestsLeft.put(url, (response.headers["X-RateLimit-Remaining"]?.toInt() ?: 1))
             resets.put(url, if (requestsLeft[url]!! < 1) response.headers["X-RateLimit-Reset"]?.toLong()!! else 0)
